@@ -27,7 +27,7 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.0"),
         // Tokenizer for the semantic arm. Only the `Tokenizers` API is used; the
         // `Hub` download path stays mechanically shut (precheck greps `import Hub`).
-        .package(url: "https://github.com/huggingface/swift-transformers", from: "0.1.17"),
+        .package(url: "https://github.com/huggingface/swift-transformers", from: "1.3.3"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
         .package(url: "https://github.com/TelemetryDeck/SwiftSDK", from: "2.0.0"),
         .package(url: "https://github.com/getsentry/sentry-cocoa", exact: "9.19.0"),
