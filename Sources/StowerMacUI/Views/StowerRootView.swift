@@ -158,7 +158,7 @@ public struct StowerRootView: View {
         dropper: StowerMessagesDropper = StowerMessagesDropper(perform: { _ in }),
         contacts: StowerContactsAccess = .denied,
         analyticsReporter: any StowerAnalyticsReporting = StowerNoOpAnalyticsReporter(),
-        licenseGate: any StowerLicenseGating,
+        licenseGate: (any StowerLicenseGating)? = nil,
         settings: StowerSystemSettingsOpener = StowerSystemSettingsOpener(),
         badgeDismissal: any StowerTrialBadgeDismissing = StowerUserDefaultsBadgeDismissal(),
         messagesAccessBookmarkStore: any StowerLeaseStorage = StowerUserDefaultsItem(

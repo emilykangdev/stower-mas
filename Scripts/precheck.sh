@@ -182,13 +182,7 @@ if grep -RInE --include="*.swift" 'chat\.db' Sources/StowerMacUI \
     exit 1
 fi
 
-# 6f — The Xcode app entry imports ONLY SwiftUI + StowerMacUI + Sparkle — never the engine/db.
-#      Sparkle is a first-party app-target dependency (Xcode project only, not Package.swift);
-#      it is intentionally permitted here and in the Sparkle guard below.
-if grep -RInE --include="*.swift" '^[[:space:]]*(@testable[[:space:]]+)?import[[:space:]]+(GRDB|FoundationModels|Photos|PhotoKit|StowerMessages|StowerCore)([[:space:]]|$)' StowerMac/StowerMac 2>/dev/null; then
-    echo "ERROR: the StowerMac app entry must import only SwiftUI + StowerMacUI + Sparkle, never the engine/db" >&2
-    exit 1
-fi
+# 6f — The Xcode app entry imports ONLY SwiftUI + StowerMacUI + Sparkle — never the engine/db.\n#      Sparkle is a first-party app-target dependency (Xcode project only, not Package.swift);\n#      it is intentionally permitted here and in the Sparkle guard below.\nif grep -RInE --include="*.swift" '^[[:space:]]*(@testable[[:space:]]+)?import[[:space:]]+(GRDB|FoundationModels|Photos|PhotoKit|StowerMessages|StowerCore)([[:space:]]|$)' StowerMac/StowerMac 2>/dev/null; then\n    echo "ERROR: the StowerMac app entry must import only SwiftUI + StowerMacUI + Sparkle, never the engine/db" >&2\n    exit 1\nfi\n\n# 6f-MAS — The MAS app entry imports ONLY SwiftUI + StowerMacUI — never Sparkle, never the engine/db.\nif grep -RInE --include="*.swift" '^[[:space:]]*(@testable[[:space:]]+)?import[[:space:]]+(GRDB|FoundationModels|Photos|PhotoKit|StowerMessages|StowerCore|Sparkle)([[:space:]]|$)' StowerMacMAS 2>/dev/null; then\n    echo "ERROR: the StowerMacMAS app entry must import only SwiftUI + StowerMacUI — never Sparkle or the engine/db" >&2\n    exit 1\nfi
 
 # 6g — Sparkle must NOT appear in the ROOT SPM graph (Package.swift or the root
 #      Package.resolved). It lives in the Xcode project only (StowerMac.xcodeproj).
