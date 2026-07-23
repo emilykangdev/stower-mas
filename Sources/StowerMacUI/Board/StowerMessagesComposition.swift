@@ -61,7 +61,9 @@ internal struct StowerMessagesComposition {
     /// a corrupt file aside and recreates — never deletes, never an in-memory
     /// fallback). Only a true disk-level failure throws, which propagates as a startup
     /// failure like any other essential store.
-    internal init() throws {
+    internal init(
+        analyticsReporter: (any StowerAnalyticsReporting)? = nil
+    ) throws {
         // The storage-location Application Support subfolder — Debug, Debug-demo,
         // and Release now resolve to distinct folders (PAR-62), so a Debug run
         // against real data, a Debug run against demo data, and a Release run
@@ -75,11 +77,14 @@ internal struct StowerMessagesComposition {
         )
         startup = StowerMessagesStartupAdapter(engine: provider)
         contacts = StowerContactsAccess()
-        // Build one live reporter shared across the startup funnel and the board.
-        // The facade singleton (StowerAnalytics.shared) is the authoritative kill
-        // switch; this reporter checks consent on every call (defence-in-depth).
-        let consent = StowerDiagnosticsConsent()
-        analyticsReporter = StowerTelemetryDeckReporter(consent: consent)
+        // Use caller-supplied reporter when provided, otherwise build the default
+        // TelemetryDeck reporter (existing behaviour).
+        if let reporter = analyticsReporter {
+            self.analyticsReporter = reporter
+        } else {
+            let consent = StowerDiagnosticsConsent()
+            self.analyticsReporter = StowerTelemetryDeckReporter(consent: consent)
+        }
         guard let draftURL = StowerDraftStore.defaultURL(inFolder: folderName) else {
             throw StowerDraftStoreUnavailable.locationUnavailable
         }
