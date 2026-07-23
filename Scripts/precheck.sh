@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Single-command gate. Run before every commit.
 # Scripts/install-hooks.sh wires this to .git/hooks/pre-commit.
-# Covers the same paths as .swiftlint.yml `included:` — Sources Tests.
-# MAS-ONLY WORKTREE: stripped of Sparkle, Sentry, TelemetryDeck guards —
-# those live in the direct-sales repo at ~/Documents/Projects/stower.
+# MAS-ONLY WORKTREE: builds via xcodebuild (MAS scheme), not swift build.
+# The shared Sources/ files import Sentry/TelemetryDeck — those are resolved
+# by the Xcode project (MAS target excludes them from compile sources).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
@@ -33,34 +33,18 @@ else
     swiftlint lint --strict
 fi
 
-# Step 3 — build.
-swift build
+# Step 3 — build (MAS scheme). swift build won't work here because shared
+# Sources/ files import Sentry/TelemetryDeck — those are excluded from the
+# MAS target at the Xcode project level, not the SPM level.
+xcodebuild -scheme StowerMacMAS build
 
-# Step 4 — test.
-SKIP_ARGS=()
-if [ "${STOWER_SKIP_FM_INTEGRATION:-}" = "1" ]; then
-    echo "NOTE: STOWER_SKIP_FM_INTEGRATION=1 — excluding FoundationModels" >&2
-    echo "      integration suite (needs macOS 26 + Apple Intelligence)." >&2
-    SKIP_ARGS=(--skip 'StowerFMReplyJudgeIntegrationTests')
-fi
-DEVDIR="$(xcode-select -p)"
-if [ "$(basename "$DEVDIR")" = "CommandLineTools" ]; then
-    FW="$DEVDIR/Library/Developer/Frameworks"
-    INTEROP="$DEVDIR/Library/Developer/usr/lib"
-    swift test \
-        -Xswiftc -F -Xswiftc "$FW" \
-        -Xlinker -F -Xlinker "$FW" \
-        -Xlinker -rpath -Xlinker "$FW" \
-        -Xlinker -rpath -Xlinker "$INTEROP" \
-        ${SKIP_ARGS[@]+"${SKIP_ARGS[@]}"}
-else
-    swift test ${SKIP_ARGS[@]+"${SKIP_ARGS[@]}"}
-fi
+# Step 4 — test (MAS scheme).
+xcodebuild -scheme StowerMacMAS test
 
 # Step 5 — module boundary checks (shared Sources/ guards, MAS-only).
-# These guards verify the source-level quarantine holds. The MAS target
-# excludes certain files from its compile sources, but the import text
-# still exists in the source tree — the guards catch reintroductions.
+# These verify the source-level quarantine holds. The MAS target excludes
+# files from its compile sources, but the import text still exists in the
+# source tree — these guards catch reintroductions at the source level.
 
 # 6a — Engine-internal modules never imported by StowerMacUI (permanent ban).
 if grep -RInE --include="*.swift" \
@@ -97,7 +81,7 @@ SC_ALLOWED="$(printf '%s\n' \
     "Sources/StowerMacUI/Startup/StowerMessagesSourceOverride.swift" \
     | LC_ALL=C sort)"
 SC_IMPORTERS="$(grep -RIlE --include="*.swift" \
-    '^[[:space:]]*(@[A-Za-z_][A-Za-z0-9_]*(\\([^)]*\\))?([[:space:]]|$))*import[[:space:]]+([a-z]+[[:space:]]+)?StowerCore([[:space:].]|$)' \
+    '^[[:space:]]*(@[A-Za-z_][A-Za-z0-9_]*(\([^)]*\))?([[:space:]]|$))*import[[:space:]]+([a-z]+[[:space:]]+)?StowerCore([[:space:].]|$)' \
     Sources/StowerMacUI/ 2>/dev/null | LC_ALL=C sort || true)"
 if [ "$SC_IMPORTERS" != "$SC_ALLOWED" ]; then
     echo "ERROR: only these StowerMacUI files may import StowerCore:" >&2
