@@ -26,7 +26,7 @@ internal final class StowerStartupModel {
     /// `internal` (not `private`) so the `StowerStartupModelLicenseEntry.swift`
     /// extension's `showLicenseEntry()`/`dismissLicenseEntry()` can read them
     /// without widening access beyond the module.
-    internal let licenseGate: any StowerLicenseGating
+    internal let licenseGate: (any StowerLicenseGating)?
     internal let clock: @Sendable () -> Date
 
     /// The analytics reporter.
@@ -106,7 +106,7 @@ internal final class StowerStartupModel {
     ///     generation guard); `nil` in production.
     internal init(
         provider: any StowerStartupProviding,
-        licenseGate: any StowerLicenseGating,
+        licenseGate: (any StowerLicenseGating)? = nil,
         config: StowerStartupDebtConfig = .appDefault,
         clock: @escaping @Sendable () -> Date = { Date() },
         sleep: @escaping @Sendable (Duration) async throws -> Void = {
@@ -156,7 +156,7 @@ internal final class StowerStartupModel {
     /// Pure local read via `licenseGate.licenseState(now:)`. Callers gate on
     /// this before showing the badge; the dismissal flag is NOT wired here.
     internal func trialBadge() -> StowerTrialBadge? {
-        guard case .trial(let expiry) = licenseGate.licenseState(now: clock()) else { return nil }
+        guard let licenseGate, case .trial(let expiry) = licenseGate.licenseState(now: clock()) else { return nil }
         return StowerTrialBadge(expiry: expiry)
     }
 
@@ -188,7 +188,7 @@ internal final class StowerStartupModel {
     /// purchase confirmation must fire on every success path regardless.
     @discardableResult
     internal func activate(key: String) async -> Bool {
-        guard !isActivating, state != .connectedPreparingBoard else { return false }
+        guard let licenseGate, !isActivating, state != .connectedPreparingBoard else { return false }
         isActivating = true
         defer { isActivating = false }
         let runGeneration = generation
@@ -248,7 +248,7 @@ internal final class StowerStartupModel {
     /// `hardwareCheckedThisRun` is still latched from the run that reached the
     /// board.
     internal func refreshLicenseIfOnBoard() async {
-        guard state == .connectedPreparingBoard else { return }
+        guard let licenseGate, state == .connectedPreparingBoard else { return }
         let runGeneration = generation
         let licenseState = licenseGate.licenseState(now: clock())
         guard generation == runGeneration, state == .connectedPreparingBoard else { return }
@@ -293,23 +293,24 @@ internal final class StowerStartupModel {
             // `isFirstTrialObservation` must be read BEFORE `licenseState`: the
             // latter's trial-clock read seeds the first-launch date as a side
             // effect, so checking after would always see it as already seeded.
-            let isFirstTrialObservation = licenseGate.isFirstTrialObservation(now: clock())
-            let licenseState = licenseGate.licenseState(now: clock())
-            guard generation == self.generation else { return }
-            emitTrialStartedIfNeeded(for: licenseState, isFirstObservation: isFirstTrialObservation)
-            let target = try await route(
-                licenseState: licenseState,
-                generation: generation,
-                wasAwaitingMessagesAccess: wasAwaitingMessagesAccess
-            )
-            try await minimumDisplayDone
-            // `target` is this run's TRUE terminal state (reached only after
-            // `loadAndRoute` resolves), so `commit` here is the single place that
-            // reports this run's real `hardware_checked` verdict — see the
-            // `.checkingMessages` commit in `route(licenseState:...)` (which passes
-            // `emitsFunnelEvent: false`) for why the optimistic UI commit must not
-            // also report one.
-            commit(target, generation: generation)
+            if let licenseGate {
+                let isFirstTrialObservation = licenseGate.isFirstTrialObservation(now: clock())
+                let licenseState = licenseGate.licenseState(now: clock())
+                guard generation == self.generation else { return }
+                emitTrialStartedIfNeeded(for: licenseState, isFirstObservation: isFirstTrialObservation)
+                let target = try await route(
+                    licenseState: licenseState,
+                    generation: generation,
+                    wasAwaitingMessagesAccess: wasAwaitingMessagesAccess
+                )
+                try await minimumDisplayDone
+                commit(target, generation: generation)
+            } else {
+                // No license gate — treat as always-licensed, skip directly to board.
+                let target = try await loadAndRoute(wasAwaitingMessagesAccess: wasAwaitingMessagesAccess)
+                try await minimumDisplayDone
+                commit(target, generation: generation)
+            }
         } catch is CancellationError {
             // A superseded / cancelled run never routes to a failure screen.
         } catch {

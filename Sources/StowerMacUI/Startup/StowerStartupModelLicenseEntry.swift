@@ -30,7 +30,7 @@ extension StowerStartupModel {
         guard licenseEntryIsDismissible else { return }
         licenseEntryIsDismissible = false
         generation += 1
-        switch licenseGate.licenseState(now: clock()) {
+        switch licenseGate?.licenseState(now: clock()) ?? .licensed {
         case .licensed, .trial:
             commit(.connectedPreparingBoard, generation: generation, emitsFunnelEvent: false)
         case .expired:
