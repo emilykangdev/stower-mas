@@ -15,8 +15,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "AA01CAFE0001A5DF00BCEE1B"
-               BuildableName = "StowerMAS.app"
+               BlueprintIdentifier = "CAFEMAS02A5DF00BCEE1B"
+               BuildableName = "Stower.app"
                BlueprintName = "StowerMacMAS"
                ReferencedContainer = "container:StowerMac.xcodeproj">
             </BuildableReference>
@@ -44,8 +44,8 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AA01CAFE0001A5DF00BCEE1B"
-            BuildableName = "StowerMAS.app"
+            BlueprintIdentifier = "CAFEMAS02A5DF00BCEE1B"
+            BuildableName = "Stower.app"
             BlueprintName = "StowerMacMAS"
             ReferencedContainer = "container:StowerMac.xcodeproj">
          </BuildableReference>
@@ -61,8 +61,8 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "AA01CAFE0001A5DF00BCEE1B"
-            BuildableName = "StowerMAS.app"
+            BlueprintIdentifier = "CAFEMAS02A5DF00BCEE1B"
+            BuildableName = "Stower.app"
             BlueprintName = "StowerMacMAS"
             ReferencedContainer = "container:StowerMac.xcodeproj">
          </BuildableReference>
