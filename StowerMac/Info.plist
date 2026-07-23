@@ -1,12 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>SUFeedURL</key>
-	<string>https://updates.stower.app/messages/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>8URRsANNg7iLie8EzVVv5piaF0MtoBcGCmg+O6ZDzas=</string>
-	<key>SUEnableInstallerLauncherService</key>
-	<true/>
-</dict>
-</plist>
+{"content": "<!-- This Info.plist is intentionally empty for MAS. All values come from Xcode build settings (GENERATE_INFOPLIST_FILE = YES). The direct-sales repo at ~/Documents/Projects/stower has the Sparkle Info.plist. -->\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict/>\n</plist>\n", "path": "/Users/emilykang/worktrees/stower-mas/mas-migration/stower-mas/StowerMac/Info.plist"}
