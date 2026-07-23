@@ -6,8 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DB486A812FE398BF00BCEE1B /* StowerMacUI in Frameworks */ = {isa = PBXBuildFile; productRef = DB486A802FE398BF00BCEE1B /* StowerMacUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		DB486A5E2FDF725E00BCEE1B /* StowerMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StowerMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAFEMAS03A5DF00BCEE1B /* Stower.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StowerMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -41,7 +45,7 @@
 		DB486A5F2FDF725E00BCEE1B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DB486A5E2FDF725E00BCEE1B /* StowerMac.app */,
+				CAFEMAS03A5DF00BCEE1B /* Stower.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -69,7 +73,7 @@
 				DB486A802FE398BF00BCEE1B /* StowerMacUI */,
 			);
 			productName = StowerMacMAS;
-			productReference = DB486A5E2FDF725E00BCEE1B /* StowerMac.app */;
+			productReference = CAFEMAS03A5DF00BCEE1B /* Stower.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
