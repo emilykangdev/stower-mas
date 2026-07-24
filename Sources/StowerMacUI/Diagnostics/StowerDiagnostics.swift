@@ -1,12 +1,12 @@
 import Foundation
 
 /// The diagnostics umbrella facade: the single launch entry point for all
-/// diagnostics backends (crash reporting + analytics).
+/// diagnostics backends (MAS: analytics only, no crash reporting).
 ///
-/// `initialize()` is the ONLY call the app target makes to start both backends.
-/// It reads consent once, and when enabled starts them in the required order
-/// (JC3): Sentry crash reporting FIRST (earliest crash coverage), then
-/// TelemetryDeck analytics. When disabled, neither backend starts.
+/// On the MAS target, Sentry crash reporting is absent (SDK not available).
+/// `initialize()` is the ONLY call the app target makes to start the analytics
+/// backend. It reads consent once, and when enabled starts analytics. When
+/// disabled, the backend does not start.
 ///
 /// This facade also exposes consent passthrough — `isEnabled()`, `setEnabled`,
 /// and `reconcileLicenseConsent` — so the app target and UI never need to name
@@ -20,11 +20,10 @@ public enum StowerDiagnostics {
 
     // MARK: — Initialization
 
-    /// Initializes all diagnostics backends behind the shared consent gate.
+    /// Initializes the analytics backend behind the shared consent gate.
     ///
     /// The production entry point for `StowerMacApp.init()`. When consent is
-    /// off this is a complete no-op — no SDK init, no crash handler, no
-    /// automatic `TelemetryDeck.Session.started` (A3/JC3/JC6).
+    /// off this is a complete no-op — no analytics backend starts.
     ///
     /// The injectable form used by tests is `internal`; this public wrapper
     /// supplies real UserDefaults-backed instances so the app target never names
@@ -37,30 +36,23 @@ public enum StowerDiagnostics {
         )
     }
 
-    /// Initializes all diagnostics backends.
+    /// Initializes the analytics backend.
     ///
     /// - Parameters:
     ///   - consent: Shared consent accessor (real UserDefaults-backed in production;
     ///     inject a fake for tests).
     ///   - identity: Shared install-identity accessor (real UserDefaults-backed in
     ///     production; inject a fake for tests).
-    ///   - makeAnalyticsClient: Injectable TelemetryDeck init closure for tests.
-    ///     Tests inject a spy to verify zero calls when consent is off.
+    ///   - makeAnalyticsClient: Injectable analytics init closure for tests (no-op
+    ///     on MAS — no TelemetryDeck).
     @MainActor
     internal static func initialize(
         consent: StowerDiagnosticsConsent,
         identity: StowerDiagnosticsIdentity,
-        makeAnalyticsClient: (String, String, String) -> Void = { appID, salt, userID in
-            #if canImport(TelemetryDeck)
-                StowerTelemetryDeckReporter.initializeSDK(appID: appID, salt: salt)
-                StowerTelemetryDeckReporter.setDefaultUser(userID)
-            #else
-                _ = appID; _ = salt; _ = userID
-            #endif
-        }
+        makeAnalyticsClient: (String, String, String) -> Void = { _, _, _ in }
     ) {
         guard consent.isEnabled else {
-            // One gate: both backends stay off. Build a no-op analytics shared
+            // One gate: analytics stays off. Build a no-op analytics shared
             // instance so report(_:) calls are safe no-ops this session.
             StowerAnalytics.startBackend(
                 consent: consent,
@@ -70,14 +62,7 @@ public enum StowerDiagnostics {
             return
         }
 
-        // Sentry FIRST — gives crash coverage as early as possible (JC3).
-        #if canImport(Sentry)
-            StowerCrashReporting.start(consent: consent)
-        #endif
-
-        // Then TelemetryDeck analytics backend (startBackend has its own
-        // canImport fallback that installs StowerNoOpAnalyticsReporter when
-        // TelemetryDeck is absent, so call unconditionally).
+        // MAS: no Sentry crash reporting — analytics only.
         StowerAnalytics.startBackend(
             consent: consent,
             identity: identity,
@@ -97,77 +82,24 @@ public enum StowerDiagnostics {
 
     /// Enables or disables all diagnostics backends and updates the UserDefaults cache.
     ///
-    /// When disabling, calls `StowerCrashReporting.stop()` (which closes the
-    /// Sentry SDK) for a best-effort immediate halt. The primary guarantee remains
-    /// "never started for an opted-out user at launch" (JC3); mid-session close
-    /// is defence-in-depth so crashes after the toggle are not collected.
-    ///
-    /// **Re-enable note:** re-enabling (`enabled=true`) restores the analytics kill
-    /// latch so future TelemetryDeck signals fire, but does NOT restart the Sentry
-    /// crash handler mid-session — `SentrySDK.start` is a one-shot per process and
-    /// re-calling after `close()` is unsupported. Crash coverage resumes on the next
-    /// app launch (where `initialize()` starts Sentry when consent is on).
+    /// On MAS there is no crash reporting to stop — this only toggles analytics.
     ///
     /// The caller (Settings toggle / disclosure card) is responsible for pushing
     /// the change to the license record (`diagnostics_opt_out`) via the licensing
     /// workstream.
     public static func setEnabled(_ enabled: Bool) {
         StowerAnalytics.setEnabled(enabled)
-        if !enabled {
-            #if canImport(Sentry)
-                StowerCrashReporting.stop()
-            #endif
-        }
     }
 
     /// Reconciles the local UserDefaults cache against the license record's opt-out
     /// flag on each license check-in.
     ///
     /// "Off wins" — this never auto-re-enables. When `licenseOptOut` is `true`,
-    /// delegates to `StowerAnalytics.reconcileLicenseConsent(licenseOptOut:)` AND
-    /// calls `StowerCrashReporting.stop()` so the Sentry crash handler is also
-    /// closed immediately (same best-effort mid-session halt as `setEnabled(false)`).
+    /// delegates to `StowerAnalytics.reconcileLicenseConsent(licenseOptOut:)`.
     ///
     /// - Parameter licenseOptOut: `true` when the license record carries
     ///   `diagnostics_opt_out = true`.
     public static func reconcileLicenseConsent(licenseOptOut: Bool) {
-        reconcileLicenseConsent(
-            licenseOptOut: licenseOptOut,
-            stopCrashReporting: {
-                #if canImport(Sentry)
-                    StowerCrashReporting.stop()
-                #endif
-            }
-        )
-    }
-
-    /// Injectable form of `reconcileLicenseConsent(licenseOptOut:)` for tests.
-    ///
-    /// Tests inject a spy for `stopCrashReporting` to assert it is called on
-    /// opt-out without touching the real Sentry SDK.
-    internal static func reconcileLicenseConsent(
-        licenseOptOut: Bool,
-        stopCrashReporting: () -> Void
-    ) {
         StowerAnalytics.reconcileLicenseConsent(licenseOptOut: licenseOptOut)
-        if licenseOptOut {
-            stopCrashReporting()
-        }
     }
-
-    #if DEBUG
-        /// Triggers an immediate trap so the end-to-end crash-reporting pipeline can
-        /// be verified by hand.
-        ///
-        /// DEBUG-only — never compiled into a release build. Sentry's signal/Mach
-        /// handler (installed by `initialize()` when consent is on) catches the trap,
-        /// writes the report to disk in the dying process, and uploads it on the NEXT
-        /// launch (A2) — so relaunch Stower after using this, then check the Sentry EU
-        /// dashboard. Requires consent ON at launch (default-on); with consent off no
-        /// handler is installed and nothing is captured. The reason is a static string
-        /// (no user data — 6n) and the scrubber rebuilds `exception.value` content-free.
-        public static func debugForceCrash() {
-            fatalError("Stower DEBUG forced crash — Sentry pipeline test")
-        }
-    #endif
 }

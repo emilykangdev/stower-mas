@@ -77,17 +77,12 @@ internal struct StowerMessagesComposition {
         )
         startup = StowerMessagesStartupAdapter(engine: provider)
         contacts = StowerContactsAccess()
-        // Use caller-supplied reporter when provided, otherwise build the default
-        // TelemetryDeck reporter (existing behaviour).
+        // Use caller-supplied reporter when provided, otherwise use a no-op
+        // reporter (MAS target has no TelemetryDeck SDK).
         if let reporter = analyticsReporter {
             self.analyticsReporter = reporter
         } else {
-            let consent = StowerDiagnosticsConsent()
-            #if canImport(TelemetryDeck)
-                self.analyticsReporter = StowerTelemetryDeckReporter(consent: consent)
-            #else
-                self.analyticsReporter = StowerNoOpAnalyticsReporter()
-            #endif
+            self.analyticsReporter = StowerNoOpAnalyticsReporter()
         }
         guard let draftURL = StowerDraftStore.defaultURL(inFolder: folderName) else {
             throw StowerDraftStoreUnavailable.locationUnavailable
