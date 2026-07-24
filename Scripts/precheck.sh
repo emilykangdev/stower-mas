@@ -36,7 +36,7 @@ fi
 # Step 3 — build (MAS scheme). swift build won't work here because shared
 # Sources/ files import Sentry/TelemetryDeck — those are excluded from the
 # MAS target at the Xcode project level, not the SPM level.
-xcodebuild -project StowerMac/StowerMac.xcodeproj -scheme StowerMacMAS build
+xcodebuild -project StowerMac/StowerMac.xcodeproj -scheme StowerMacMAS build CODE_SIGNING_ALLOWED=NO
 
 # Step 4 — test (MAS scheme). The MAS scheme has no Xcode-native test targets
 # (all test targets are SPM-level, defined in Package.swift). xcodebuild test
@@ -98,7 +98,7 @@ fi
 # 6d — MAS app entry must import ONLY SwiftUI + StowerMacUI.
 if grep -RInE --include="*.swift" \
     '^[[:space:]]*(@testable[[:space:]]+)?import[[:space:]]+(GRDB|FoundationModels|Photos|PhotoKit|StowerMessages|StowerCore|Sparkle)([[:space:]]|$)' \
-    StowerMacMAS 2>/dev/null; then
+    StowerMac/StowerMacMAS 2>/dev/null; then
     echo "ERROR: the StowerMacMAS app entry must import only SwiftUI + StowerMacUI" >&2
     exit 1
 fi
