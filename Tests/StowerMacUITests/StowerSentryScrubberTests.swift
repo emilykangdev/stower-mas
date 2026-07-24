@@ -1,3 +1,4 @@
+#if canImport(Sentry)
 import Foundation
 import Sentry
 import Testing
@@ -300,3 +301,4 @@ import Testing
         return event
     }
 }
+#endif

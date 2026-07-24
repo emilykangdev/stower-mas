@@ -1,3 +1,4 @@
+#if canImport(Sentry)
 import Foundation
 import Sentry
 import Testing
@@ -117,3 +118,4 @@ import Testing
         #expect(opts.beforeSend != nil, "beforeSend must be wired to the scrubber")
     }
 }
+#endif

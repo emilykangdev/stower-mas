@@ -38,12 +38,20 @@ fi
 # MAS target at the Xcode project level, not the SPM level.
 xcodebuild -project StowerMac/StowerMac.xcodeproj -scheme StowerMacMAS build CODE_SIGNING_ALLOWED=NO
 
-# Step 4 — test (MAS scheme). The MAS scheme has no Xcode-native test targets
-# (all test targets are SPM-level, defined in Package.swift). xcodebuild test
-# can't run them without a testable reference; they are gated separately via
-# swift test in the non-MAS worktree or by CI.
-# xcodebuild -project StowerMac/StowerMac.xcodeproj -scheme StowerMacMAS test
-echo "  (tests: SPM-level only — run via swift test in the main worktree)"
+# Step 4 — test. The Sentry/TelemetryDeck-dependent test files are wrapped in
+# #if canImport guards so they compile out when those deps are absent from the
+# MAS worktree's SPM graph. All other tests (StowerCoreTests,
+# StowerMessagesTests, StowerMacUITests minus the guarded suites) run normally.
+# Tests that depend on FoundationModels (macOS 26 + Apple Intelligence) are
+# excluded when STOWER_SKIP_FM_INTEGRATION=1 is set (CI only — unset locally).
+SKIP_ARGS=()
+if [ "${STOWER_SKIP_FM_INTEGRATION:-}" = "1" ]; then
+    echo "NOTE: STOWER_SKIP_FM_INTEGRATION=1 — excluding the FoundationModels" >&2
+    echo "      integration suite (needs macOS 26 + Apple Intelligence). All" >&2
+    echo "      other tests still run and still fail hard." >&2
+    SKIP_ARGS=(--skip 'StowerFMReplyJudgeIntegrationTests')
+fi
+swift test "${SKIP_ARGS[@]}"
 
 # Step 5 — module boundary checks (shared Sources/ guards, MAS-only).
 # These verify the source-level quarantine holds. The MAS target excludes
