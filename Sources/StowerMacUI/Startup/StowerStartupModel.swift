@@ -156,7 +156,8 @@ internal final class StowerStartupModel {
     /// Pure local read via `licenseGate.licenseState(now:)`. Callers gate on
     /// this before showing the badge; the dismissal flag is NOT wired here.
     internal func trialBadge() -> StowerTrialBadge? {
-        guard let licenseGate, case .trial(let expiry) = licenseGate.licenseState(now: clock()) else { return nil }
+        guard let licenseGate, case .trial(let expiry) = licenseGate.licenseState(now: clock())
+        else { return nil }
         return StowerTrialBadge(expiry: expiry)
     }
 
@@ -188,7 +189,9 @@ internal final class StowerStartupModel {
     /// purchase confirmation must fire on every success path regardless.
     @discardableResult
     internal func activate(key: String) async -> Bool {
-        guard let licenseGate, !isActivating, state != .connectedPreparingBoard else { return false }
+        guard let licenseGate, !isActivating, state != .connectedPreparingBoard else {
+            return false
+        }
         isActivating = true
         defer { isActivating = false }
         let runGeneration = generation
@@ -297,7 +300,10 @@ internal final class StowerStartupModel {
                 let isFirstTrialObservation = licenseGate.isFirstTrialObservation(now: clock())
                 let licenseState = licenseGate.licenseState(now: clock())
                 guard generation == self.generation else { return }
-                emitTrialStartedIfNeeded(for: licenseState, isFirstObservation: isFirstTrialObservation)
+                emitTrialStartedIfNeeded(
+                    for: licenseState,
+                    isFirstObservation: isFirstTrialObservation
+                )
                 let target = try await route(
                     licenseState: licenseState,
                     generation: generation,
@@ -307,7 +313,9 @@ internal final class StowerStartupModel {
                 commit(target, generation: generation)
             } else {
                 // No license gate — treat as always-licensed, skip directly to board.
-                let target = try await loadAndRoute(wasAwaitingMessagesAccess: wasAwaitingMessagesAccess)
+                let target = try await loadAndRoute(
+                    wasAwaitingMessagesAccess: wasAwaitingMessagesAccess
+                )
                 try await minimumDisplayDone
                 commit(target, generation: generation)
             }

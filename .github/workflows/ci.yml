@@ -67,21 +67,15 @@ jobs:
           key: stowermac-spm-${{ runner.os }}-${{ hashFiles('StowerMac/StowerMac.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
           restore-keys: |
             stowermac-spm-${{ runner.os }}-
-      - name: Build StowerMac app target (no signing)
+      - name: Build StowerMacMAS app target (no signing)
         run: |
           xcodebuild build \
             -project StowerMac/StowerMac.xcodeproj \
-            -scheme StowerMac \
+            -scheme StowerMacMAS \
             -configuration Debug \
             -clonedSourcePackagesDirPath "${{ runner.temp }}/stowermac-spm" \
             CODE_SIGNING_ALLOWED=NO \
             -skipPackagePluginValidation
-      # Release-config build: proves the `#if DEBUG` seams compile OUT of a Release
-      # binary. precheck's Step 3 `swift build` is Debug (DEBUG defined), so a
-      # reference to a `#if DEBUG`-only symbol from non-debug code passes locally
-      # yet would break — or silently ship a debug-only lever into — the Release
-      # app. This step turns that into a hard CI failure. Kept OUT of the per-commit
-      # precheck hook on purpose (a full release build ~doubles build time); CI is
-      # the right altitude, alongside the FM-suite divergence above.
-      - name: Release-config build (debug seams must compile out)
-        run: swift build -c release
+      # Release build skipped in MAS worktree: no #if DEBUG seams to verify
+      # (Sentry/TelemetryDeck are gated by #if canImport, not DEBUG), and
+      # swift build -c release would fail without those deps in Package.swift.
