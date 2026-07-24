@@ -83,7 +83,11 @@ internal struct StowerMessagesComposition {
             self.analyticsReporter = reporter
         } else {
             let consent = StowerDiagnosticsConsent()
-            self.analyticsReporter = StowerTelemetryDeckReporter(consent: consent)
+            #if canImport(TelemetryDeck)
+                self.analyticsReporter = StowerTelemetryDeckReporter(consent: consent)
+            #else
+                self.analyticsReporter = StowerNoOpAnalyticsReporter()
+            #endif
         }
         guard let draftURL = StowerDraftStore.defaultURL(inFolder: folderName) else {
             throw StowerDraftStoreUnavailable.locationUnavailable

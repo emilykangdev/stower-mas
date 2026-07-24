@@ -51,8 +51,12 @@ public enum StowerDiagnostics {
         consent: StowerDiagnosticsConsent,
         identity: StowerDiagnosticsIdentity,
         makeAnalyticsClient: (String, String, String) -> Void = { appID, salt, userID in
-            StowerTelemetryDeckReporter.initializeSDK(appID: appID, salt: salt)
-            StowerTelemetryDeckReporter.setDefaultUser(userID)
+            #if canImport(TelemetryDeck)
+                StowerTelemetryDeckReporter.initializeSDK(appID: appID, salt: salt)
+                StowerTelemetryDeckReporter.setDefaultUser(userID)
+            #else
+                _ = appID; _ = salt; _ = userID
+            #endif
         }
     ) {
         guard consent.isEnabled else {
@@ -67,14 +71,18 @@ public enum StowerDiagnostics {
         }
 
         // Sentry FIRST — gives crash coverage as early as possible (JC3).
-        StowerCrashReporting.start(consent: consent)
+        #if canImport(Sentry)
+            StowerCrashReporting.start(consent: consent)
+        #endif
 
         // Then TelemetryDeck analytics backend.
-        StowerAnalytics.startBackend(
-            consent: consent,
-            identity: identity,
-            makeClient: makeAnalyticsClient
-        )
+        #if canImport(TelemetryDeck)
+            StowerAnalytics.startBackend(
+                consent: consent,
+                identity: identity,
+                makeClient: makeAnalyticsClient
+            )
+        #endif
     }
 
     // MARK: — Consent passthrough
@@ -106,7 +114,9 @@ public enum StowerDiagnostics {
     public static func setEnabled(_ enabled: Bool) {
         StowerAnalytics.setEnabled(enabled)
         if !enabled {
-            StowerCrashReporting.stop()
+            #if canImport(Sentry)
+                StowerCrashReporting.stop()
+            #endif
         }
     }
 
@@ -123,7 +133,11 @@ public enum StowerDiagnostics {
     public static func reconcileLicenseConsent(licenseOptOut: Bool) {
         reconcileLicenseConsent(
             licenseOptOut: licenseOptOut,
-            stopCrashReporting: { StowerCrashReporting.stop() }
+            stopCrashReporting: {
+                #if canImport(Sentry)
+                    StowerCrashReporting.stop()
+                #endif
+            }
         )
     }
 

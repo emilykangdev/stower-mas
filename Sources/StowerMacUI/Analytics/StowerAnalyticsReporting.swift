@@ -19,7 +19,9 @@ internal protocol StowerAnalyticsReporting: Sendable {
 ///
 /// Production injects the live `StowerTelemetryDeckReporter`; a no-op keeps
 /// previews and tests that don't assert on analytics off the network entirely.
-internal struct StowerNoOpAnalyticsReporter: StowerAnalyticsReporting {
+public struct StowerNoOpAnalyticsReporter: StowerAnalyticsReporting {
+    /// Creates a no-op analytics reporter that drops every event.
+    public init() {}
     internal func report(_ event: StowerAnalyticsEvent) {}
 }
 

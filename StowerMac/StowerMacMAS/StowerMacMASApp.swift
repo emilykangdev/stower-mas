@@ -24,27 +24,13 @@ struct StowerMacMASApp: App {
 
     var body: some Scene {
         WindowGroup {
-            StowerRootView(
+            StowerMacMASContainer(
                 flusher: appDelegate.flusher,
-                undoManager: undoManager,
-                analyticsReporter: StowerNoOpAnalyticsReporter(),
-                licenseGate: nil
+                undoManager: undoManager
             )
         }
         .commands {
-            // Stower is a single-board app over one local data set: remove
-            // File > New Window (⌘N) so a user can't spawn a second board
-            // window. macOS already prevents launching a second *process* of an
-            // app; this closes the in-app multi-window path.
             CommandGroup(replacing: .newItem) {}
-            // ⌘Z / ⌘⇧Z (A4/B1 spike — resolved WITHOUT an AppKit responder bridge in the
-            // board; the only AppKit here is forwarding the action the standard Edit-menu
-            // item already uses). We replace `.undoRedo` so ⌘Z can reach the board's undo,
-            // but FIRST forward `undo:`/`redo:` down the responder chain — exactly what the
-            // default Undo item does (`action: undo:, target: nil`). When a draft-composer
-            // text field is first responder it handles its own text undo and we stop;
-            // ONLY when nothing in the chain handles it does the board dismiss-undo run.
-            // So text-field undo is preserved and ⌘Z reverses a dismiss when not editing.
             CommandGroup(replacing: .undoRedo) {
                 Button("Undo") { performUndo() }
                     .keyboardShortcut("z", modifiers: .command)
@@ -54,7 +40,7 @@ struct StowerMacMASApp: App {
         }
 
         Settings {
-            StowerSettingsView()  // No additional panes (no Updates tab)
+            StowerSettingsView()
         }
     }
 
@@ -94,5 +80,41 @@ final class StowerAppDelegate: NSObject, NSApplicationDelegate {
             NSApp.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
+    }
+}
+
+/// Builds the root once, surfacing a startup failure if an essential store (the
+/// precious drafts database) can't be opened on a true disk-level fault.
+/// No diagnostics backends, no license gating — MAS privacy-first build.
+private struct StowerMacMASContainer: View {
+    @State private var root: Result<StowerRootView, Error>
+
+    init(flusher: StowerTerminationFlusher, undoManager: UndoManager) {
+        _root = State(
+            initialValue: Result {
+                try StowerRootView(
+                    flusher: flusher,
+                    undoManager: undoManager,
+                    analyticsReporter: StowerNoOpAnalyticsReporter()
+                )
+            }
+        )
+    }
+
+    var body: some View {
+        switch root {
+        case .success(let view):
+            view
+        case .failure:
+            ContentUnavailableView(
+                "Stower couldn't open your data",
+                systemImage: "externaldrive.badge.exclamationmark",
+                description: Text(
+                    "There wasn't enough room or permission to open Stower's storage. "
+                        + "Free disk space, verify Stower can access its storage "
+                        + "location, and reopen Stower."
+                )
+            )
+        }
     }
 }

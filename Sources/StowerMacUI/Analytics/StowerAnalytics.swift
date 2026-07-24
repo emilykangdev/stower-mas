@@ -70,8 +70,12 @@ public final class StowerAnalytics {
         consent: StowerDiagnosticsConsent,
         identity: StowerDiagnosticsIdentity,
         makeClient: (String, String, String) -> Void = { appID, salt, userID in
-            StowerTelemetryDeckReporter.initializeSDK(appID: appID, salt: salt)
-            StowerTelemetryDeckReporter.setDefaultUser(userID)
+            #if canImport(TelemetryDeck)
+                StowerTelemetryDeckReporter.initializeSDK(appID: appID, salt: salt)
+                StowerTelemetryDeckReporter.setDefaultUser(userID)
+            #else
+                _ = appID; _ = salt; _ = userID
+            #endif
         }
     ) {
         guard consent.isEnabled else {
@@ -86,8 +90,15 @@ public final class StowerAnalytics {
 
         if Self.didStartSDK {
             // SDK already started this session (A4: no stop/restart); refresh live reporter only.
+            #if canImport(TelemetryDeck)
+                let reporter: any StowerAnalyticsReporting = StowerTelemetryDeckReporter(
+                    consent: consent
+                )
+            #else
+                let reporter: any StowerAnalyticsReporting = StowerNoOpAnalyticsReporter()
+            #endif
             Self.shared = StowerAnalytics(
-                reporter: StowerTelemetryDeckReporter(consent: consent),
+                reporter: reporter,
                 consent: consent
             )
             return
@@ -98,8 +109,15 @@ public final class StowerAnalytics {
         makeClient(appID, stableSalt, identity.clientUser())
         Self.didStartSDK = true
 
+        #if canImport(TelemetryDeck)
+            let reporter: any StowerAnalyticsReporting = StowerTelemetryDeckReporter(
+                consent: consent
+            )
+        #else
+            let reporter: any StowerAnalyticsReporting = StowerNoOpAnalyticsReporter()
+        #endif
         let live = StowerAnalytics(
-            reporter: StowerTelemetryDeckReporter(consent: consent),
+            reporter: reporter,
             consent: consent
         )
         Self.shared = live
@@ -172,8 +190,15 @@ public final class StowerAnalytics {
             // live reporter (the SDK can't be re-initialized; A4).
             StowerDiagnosticsKillLatch.reset()
             if Self.didStartSDK {
+                #if canImport(TelemetryDeck)
+                    let reporter: any StowerAnalyticsReporting = StowerTelemetryDeckReporter(
+                        consent: current.consent
+                    )
+                #else
+                    let reporter: any StowerAnalyticsReporting = StowerNoOpAnalyticsReporter()
+                #endif
                 Self.shared = StowerAnalytics(
-                    reporter: StowerTelemetryDeckReporter(consent: current.consent),
+                    reporter: reporter,
                     consent: current.consent
                 )
             } else {
