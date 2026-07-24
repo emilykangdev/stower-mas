@@ -38,11 +38,11 @@ internal struct StowerFeedbackMetadata: Sendable, Equatable {
     /// - Returns: The assembled metadata.
     internal static func current(
         isOnTrial: Bool,
-        licenseStore: StowerLicenseStore? = nil,
+        licenseStore: StowerLicenseStore = StowerLicenseStore(),
         bundle: StowerFeedbackBundleReading = Bundle.main,
         processInfo: StowerFeedbackOSReading = ProcessInfo.processInfo
     ) -> StowerFeedbackMetadata {
-        let instanceID = licenseStore?.read()?.instanceID
+        let instanceID = licenseStore.read()?.instanceID
         let status: StowerFeedbackLicenseStatus =
             isOnTrial ? .trial : (instanceID != nil ? .paid : .unlicensed)
         return StowerFeedbackMetadata(

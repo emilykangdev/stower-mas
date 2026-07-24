@@ -28,12 +28,14 @@ let package = Package(
                 .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "Transformers", package: "swift-transformers"),
             ],
-            path: "Sources/StowerCore"
+            path: "Sources/StowerCore",
+            exclude: ["README.md"]
         ),
         .target(
             name: "StowerPhotos",
             dependencies: ["StowerCore"],
-            path: "Sources/StowerPhotos"
+            path: "Sources/StowerPhotos",
+            exclude: ["README.md"]
         ),
         .target(
             name: "StowerMessages",

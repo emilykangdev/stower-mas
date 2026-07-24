@@ -40,4 +40,4 @@ worktrees/
 .vscode/
 
 # Stale MAS app copy — the canonical location is StowerMac/StowerMacMAS/.
-StowerMessages/
+/StowerMessages/

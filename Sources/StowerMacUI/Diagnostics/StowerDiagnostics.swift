@@ -75,14 +75,14 @@ public enum StowerDiagnostics {
             StowerCrashReporting.start(consent: consent)
         #endif
 
-        // Then TelemetryDeck analytics backend.
-        #if canImport(TelemetryDeck)
-            StowerAnalytics.startBackend(
-                consent: consent,
-                identity: identity,
-                makeClient: makeAnalyticsClient
-            )
-        #endif
+        // Then TelemetryDeck analytics backend (startBackend has its own
+        // canImport fallback that installs StowerNoOpAnalyticsReporter when
+        // TelemetryDeck is absent, so call unconditionally).
+        StowerAnalytics.startBackend(
+            consent: consent,
+            identity: identity,
+            makeClient: makeAnalyticsClient
+        )
     }
 
     // MARK: — Consent passthrough
