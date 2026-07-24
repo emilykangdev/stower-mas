@@ -36,10 +36,14 @@ fi
 # Step 3 — build (MAS scheme). swift build won't work here because shared
 # Sources/ files import Sentry/TelemetryDeck — those are excluded from the
 # MAS target at the Xcode project level, not the SPM level.
-xcodebuild -scheme StowerMacMAS build
+xcodebuild -project StowerMac/StowerMac.xcodeproj -scheme StowerMacMAS build
 
-# Step 4 — test (MAS scheme).
-xcodebuild -scheme StowerMacMAS test
+# Step 4 — test (MAS scheme). The MAS scheme has no Xcode-native test targets
+# (all test targets are SPM-level, defined in Package.swift). xcodebuild test
+# can't run them without a testable reference; they are gated separately via
+# swift test in the non-MAS worktree or by CI.
+# xcodebuild -project StowerMac/StowerMac.xcodeproj -scheme StowerMacMAS test
+echo "  (tests: SPM-level only — run via swift test in the main worktree)"
 
 # Step 5 — module boundary checks (shared Sources/ guards, MAS-only).
 # These verify the source-level quarantine holds. The MAS target excludes
