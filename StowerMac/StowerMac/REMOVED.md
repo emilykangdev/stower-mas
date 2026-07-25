@@ -1,1 +1,0 @@
-This directory intentionally left blank — StowerMacMAS is the only app target in this MAS-only worktree. The direct-sales target lives at ~/Documents/Projects/stower.
