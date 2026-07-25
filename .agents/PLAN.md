@@ -126,14 +126,14 @@ Put it all in a table with columns: Invariant |	Test |	Threat it closes |	Enforc
 ### Documentation & References
 
 ```yaml
-- file: <path/to/related/brief-or-doc.md>
+- file: <path/to/related/doc-or-brief.md>
   why: <settled decisions; do not re-litigate>
 
-- file: <path/to/source/file.ts>
-  lines: <range — verify these lines still match at plan-write time; stale refs send the implementer to the wrong spot>
+- file: <path/to/source/file.ext>
+  lines: <range — verify still matches at plan-write time; stale refs send the implementer to the wrong spot>
   why: <what lives here and why the implementer needs to read it>
 
-- file: <path/to/related/component.tsx>
+- file: <path/to/related/component.ext>
   lines: <range>
   why: <…>
 ```
@@ -154,7 +154,7 @@ Existing primitives the implementer **must** reuse rather than recreate. The poi
 
 ### Known gotchas
 
-```typescript
+```text
 // 1. <Gotcha — concrete failure mode with the wrong shape and the right shape.>
 
 // 2. <Off-by-one / timezone / locale trap and how to dodge it.>
@@ -178,11 +178,11 @@ Approaches that were on the table and got ruled out. Logging these here stops th
 ```
 <repo-root-relative path>/
 ├── <subdir>/
-│   ├── <NewFile.tsx>                     ← NEW       (<one-line purpose>)
-│   ├── <ModifiedFile.tsx>                ← MODIFIED  (<one-line summary of edit>)
-│   ├── <AnotherModified.tsx>             ← MODIFIED  (<…>)
-│   └── <OldFile.tsx>                     ← DELETED   (<replaced by NewFile.tsx>)
-└── <styles-or-config>                    ← MODIFIED  (<…>)
+│   ├── <NewFile.ext>                     ← NEW       (<one-line purpose>)
+│   ├── <ModifiedFile.ext>                ← MODIFIED  (<one-line summary of edit>)
+│   ├── <AnotherModified.ext>             ← MODIFIED  (<…>)
+│   └── <OldFile.ext>                     ← DELETED   (<replaced by NewFile.ext>)
+└── <config-or-manifest>                  ← MODIFIED  (<…>)
 ```
 
 <If the file count climbs past ~6 NEW files, stop and reconsider — that's usually a signal the plan is doing two things and should be split, or that something on the §Reuse inventory was overlooked.>
@@ -243,10 +243,10 @@ git diff <base>...HEAD
 ```
 
 - [ ] All §Invariants have a passing test.
-- [ ] No `as any`, `as unknown as X`, `@ts-ignore`, `@ts-expect-error` introduced (AGENTS.md TypeScript Strictness).
+- [ ] No force-unwraps, no `try!`, no `!` type annotations introduced (or language-equivalent unchecked escapes).
 - [ ] No narration comments, no `// added for X`, no commented-out code.
 - [ ] No single-use helpers; no backwards-compat shims for code deleted in this same PR.
-- [ ] Every file in §Files Being Changed actually changed; no untouched entries left in the table.
+- [ ] Every file in §Files Being Changed actually changed; no untouched entries in the table.
 
 ## Open questions
 

@@ -1,11 +1,12 @@
 import Foundation
 
-/// The analytics backend: event reporting via TelemetryDeck.
+/// The analytics backend: no-op for MAS (no TelemetryDeck).
 ///
-/// The orchestration layer (consent gate, SDK init ordering) now lives in
-/// `StowerDiagnostics` (JC1). `StowerAnalytics` owns only the TelemetryDeck
-/// backend: the SDK init helper and the event reporter. The consent/identity
-/// types live in `Sources/StowerMacUI/Diagnostics/`.
+/// The orchestration layer (consent gate, backend init ordering) now lives in
+/// `StowerDiagnostics` (JC1). On the MAS target there is no TelemetryDeck SDK,
+/// so `StowerAnalytics` always uses `StowerNoOpAnalyticsReporter` — every event
+/// is silently dropped. The consent/identity types live in
+/// `Sources/StowerMacUI/Diagnostics/`.
 ///
 /// `@MainActor`-isolated: call from the main actor (the app's startup and UI
 /// already do). Synchronous — an async caller off the main actor must hop to it
@@ -16,27 +17,8 @@ public final class StowerAnalytics {
     /// The singleton built by `startBackend` and used by `report`.
     private static var shared: StowerAnalytics?
 
-    /// Whether the TelemetryDeck SDK has been initialized this session.
-    ///
-    /// Tracked so re-enabling from an off launch initializes the SDK exactly
-    /// once (the Swift SDK has no `stop()`, A4), avoiding a duplicate
-    /// `TelemetryDeck.initialize` (and its automatic `Session.started`, A3).
-    private static var didStartSDK = false
-
     private let reporter: any StowerAnalyticsReporting
     private let consent: StowerDiagnosticsConsent
-
-    /// The stable TelemetryDeck app identifier (write-only, public/committable).
-    ///
-    /// This is a collection-only App ID — not a Personal Access Token.
-    private static let appID = "56961262-AADB-4F46-A4FE-954E19C6236B"
-
-    /// A stable, app-specific salt for hash stability only.
-    ///
-    /// Anonymity comes from the random install UUID, NOT the salt (Eng F7).
-    /// Once set, this must never change — a changed salt makes every existing
-    /// user look like a new user to TelemetryDeck.
-    private static let stableSalt = "stower-v0-analytics-salt-2026"
 
     private init(reporter: any StowerAnalyticsReporting, consent: StowerDiagnosticsConsent) {
         self.reporter = reporter
@@ -45,37 +27,28 @@ public final class StowerAnalytics {
 
     // MARK: — Backend init (called only from StowerDiagnostics facade)
 
-    /// Starts the TelemetryDeck backend when consent is enabled (JC3).
+    /// Starts the analytics backend when consent is enabled (JC3).
     ///
     /// Called exclusively by `StowerDiagnostics.initialize()` — not by the app
-    /// target directly. The `makeClient` closure is injectable so tests can
-    /// verify the kill switch without importing TelemetryDeck.
+    /// target directly. On the MAS target the reporter is always a no-op.
     ///
-    /// When consent is disabled this is a complete no-op: `makeClient` is never
-    /// called, suppressing the automatic `TelemetryDeck.Session.started` signal
-    /// (A3/JC6). There is no Swift `stop()` (A4), so the gate is "never start
-    /// when disabled."
+    /// When consent is disabled this is a complete no-op.
     ///
     /// - Parameters:
     ///   - consent: The consent accessor (real UserDefaults-backed in production;
     ///     inject a fake for tests).
-    ///   - identity: The install-identity accessor (real UserDefaults-backed in production;
-    ///     inject a fake for tests).
-    ///   - makeClient: Injectable SDK-init closure. Receives `(appID, salt,
-    ///     userID)`. The default calls `StowerTelemetryDeckReporter.initializeSDK`
-    ///     and `setDefaultUser` so this file never imports TelemetryDeck
-    ///     (precheck 6k). Tests inject a spy closure.
+    ///   - identity: The install-identity accessor (real UserDefaults-backed in
+    ///     production; inject a fake for tests). Ignored on MAS — no TelemetryDeck.
+    ///   - makeClient: Injectable SDK-init closure. Ignored on MAS — always a
+    ///     no-op. Retained for source compatibility with the non-MAS target.
     @MainActor
     internal static func startBackend(
         consent: StowerDiagnosticsConsent,
         identity: StowerDiagnosticsIdentity,
-        makeClient: (String, String, String) -> Void = { appID, salt, userID in
-            StowerTelemetryDeckReporter.initializeSDK(appID: appID, salt: salt)
-            StowerTelemetryDeckReporter.setDefaultUser(userID)
-        }
+        makeClient: (String, String, String) -> Void = { _, _, _ in }
     ) {
         guard consent.isEnabled else {
-            // Kill switch: build a no-op reporter; never call makeClient.
+            // Kill switch: build a no-op reporter.
             let noOp = StowerAnalytics(
                 reporter: StowerNoOpAnalyticsReporter(),
                 consent: consent
@@ -84,22 +57,10 @@ public final class StowerAnalytics {
             return
         }
 
-        if Self.didStartSDK {
-            // SDK already started this session (A4: no stop/restart); refresh live reporter only.
-            Self.shared = StowerAnalytics(
-                reporter: StowerTelemetryDeckReporter(consent: consent),
-                consent: consent
-            )
-            return
-        }
-
-        // TelemetryDeck double-hashes the userID (UUID → SHA-256 with the salt →
-        // its own hash on the wire) so the raw UUID never leaves the device.
-        makeClient(appID, stableSalt, identity.clientUser())
-        Self.didStartSDK = true
-
+        // On MAS there is no TelemetryDeck SDK; the reporter is always a no-op.
+        let reporter: any StowerAnalyticsReporting = StowerNoOpAnalyticsReporter()
         let live = StowerAnalytics(
-            reporter: StowerTelemetryDeckReporter(consent: consent),
+            reporter: reporter,
             consent: consent
         )
         Self.shared = live
@@ -135,14 +96,11 @@ public final class StowerAnalytics {
 
     /// Resets all static state so each test starts from a clean slate.
     ///
-    /// Clears `shared`, `didStartSDK`, and the kill latch. Call at the start of
-    /// every test that calls `startBackend(consent:identity:makeClient:)` to prevent
-    /// static state from one test leaking into the next (A4: no SDK restart).
-    /// Not for production use.
+    /// Clears `shared` and the kill latch. Call at the start of every test that
+    /// calls `startBackend(consent:identity:makeClient:)`. Not for production use.
     @MainActor
     internal static func resetForTesting() {
         shared = nil
-        didStartSDK = false
         StowerDiagnosticsKillLatch.reset()
     }
 
@@ -166,19 +124,12 @@ public final class StowerAnalytics {
         guard let current = shared else { return }
         current.consent.setEnabled(enabled)
         if enabled {
-            // Clear the in-memory kill latch, then bring up a live reporter. If
-            // the SDK never started this session (launched disabled), initialize
-            // it now — gated on the now-enabled consent. Otherwise just restore a
-            // live reporter (the SDK can't be re-initialized; A4).
+            // Clear the in-memory kill latch, then bring up a live reporter.
             StowerDiagnosticsKillLatch.reset()
-            if Self.didStartSDK {
-                Self.shared = StowerAnalytics(
-                    reporter: StowerTelemetryDeckReporter(consent: current.consent),
-                    consent: current.consent
-                )
-            } else {
-                startBackend(consent: current.consent, identity: StowerDiagnosticsIdentity())
-            }
+            Self.shared = StowerAnalytics(
+                reporter: StowerNoOpAnalyticsReporter(),
+                consent: current.consent
+            )
         } else {
             // Fail closed in memory across every reporter, even if the UserDefaults
             // write failed. Durable off is backstopped by the license record's

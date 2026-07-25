@@ -10,6 +10,20 @@ scheme or architecture that didn't exist yet at the time.
 
 ## Status
 
+- 2026-07-24: **Sentry/TelemetryDeck purged from MAS-only branch.**
+  Deleted 3 Sentry/TelemetryDeck source files (`StowerCrashReporting.swift`,
+  `StowerSentryScrubber.swift`, `StowerTelemetryDeckReporter.swift`) and 2 test
+  files (`StowerCrashReportingTests.swift`, `StowerSentryScrubberTests.swift`).
+  Rewrote `StowerAnalytics.swift`, `StowerDiagnostics.swift`,
+  `StowerMessagesComposition.swift`, and `StowerDiagnosticsGateTests.swift` to
+  remove all `#if canImport(Sentry)`/`#if canImport(TelemetryDeck)` conditional
+  compilation — on MAS the analytics reporter is always `StowerNoOpAnalyticsReporter`,
+  and crash reporting is entirely absent. Updated `Docs/CrashReporting.md` (stub:
+  "Removed for MAS"), `Docs/Analytics.md` (no-op-only), `Docs/MacAppContract.md`
+  (section 10 simplified), and `Scripts/precheck.sh` (header comment + step 3
+  comment). The shared Sources/ no longer import Sentry or TelemetryDeck.
+
+
 - 2026-07-13: **Full Disk Access replaced with App Sandbox + a security-scoped Messages bookmark (branch `fda-bookmark-spike`).**
   `StowerMac.entitlements` gains `app-sandbox`, `files.user-selected.read-only`, `network.client`,
   and Sparkle's `-spks`/`-spki` temp-exceptions; `project.pbxproj` flips `ENABLE_APP_SANDBOX` to

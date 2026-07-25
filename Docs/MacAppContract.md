@@ -421,18 +421,18 @@ diagnostics subsystem — see [Analytics.md](Analytics.md) and
 [CrashReporting.md](CrashReporting.md) for the full rationale):
 
 - `StowerMacApp.init` → `StowerDiagnostics.initialize()` then
-  `StowerAnalytics.reportAppLaunched()`. `StowerDiagnostics.initialize()` is the
-  single launch entry point for both backends: when consent is on it starts Sentry
-  crash reporting FIRST (earliest crash coverage, JC3) then TelemetryDeck analytics.
-  When consent is off, `initialize()` is a complete no-op (no SDK init for either
-  backend) and `reportAppLaunched()` drops the event.
+  `StowerAnalytics.reportAppLaunched()`. On the MAS target, `initialize()` starts
+  only the analytics backend (consent-gated, no-op reporter — no TelemetryDeck SDK
+  is available). Crash reporting (Sentry) is absent.
+
+  The public `StowerDiagnostics.initialize()` signature is the same as the non-MAS
+  target, but internally Sentry crash reporting is never started — see
+  `Docs/CrashReporting.md` for the rationale.
 - `StowerAppDelegate.applicationShouldTerminate` → `StowerAnalytics.reportSessionEnded()`
   **synchronously**, BEFORE draining draft writes. The quit path never `await`s
-  analytics; the SDK buffers `session_ended` to disk and flushes on next launch.
+  analytics; the no-op reporter drops the event instantly.
 
-The analytics subsystem (`Sources/StowerMacUI/Analytics/`) and crash-reporting
-subsystem (`Sources/StowerMacUI/CrashReporting/`) are **app-internal**, not
-engine-backed — they sit above the §9 adapter wall and import no engine module.
-TelemetryDeck is quarantined to one file (`StowerTelemetryDeckReporter`) by
-`Scripts/precheck.sh` step **6k**; Sentry is quarantined to the two
-`CrashReporting/` files plus their two test files by step **6l**.
+The analytics subsystem (`Sources/StowerMacUI/Analytics/`) is **app-internal**, not
+engine-backed — it sits above the §9 adapter wall and imports no engine module.
+On the MAS target there is no TelemetryDeck import (the reporter file has been
+removed) and no Sentry import (the CrashReporting/ directory has been removed).

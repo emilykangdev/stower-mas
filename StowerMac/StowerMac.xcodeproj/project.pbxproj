@@ -8,17 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		DB486A812FE398BF00BCEE1B /* StowerMacUI in Frameworks */ = {isa = PBXBuildFile; productRef = DB486A802FE398BF00BCEE1B /* StowerMacUI */; };
-		DBA5037C2FF1D7A200B53B2F /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = DBA5037B2FF1D7A200B53B2F /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DB486A5E2FDF725E00BCEE1B /* StowerMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StowerMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAFEMAS03A5DF00BCEE1B /* Stower.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StowerMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DB486A602FDF725E00BCEE1B /* StowerMac */ = {
+		CAFEMAS01A5DF00BCEE1B /* StowerMacMAS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = StowerMac;
+			path = StowerMacMAS;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -29,7 +28,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB486A812FE398BF00BCEE1B /* StowerMacUI in Frameworks */,
-				DBA5037C2FF1D7A200B53B2F /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -39,7 +37,7 @@
 		DB486A552FDF725E00BCEE1B = {
 			isa = PBXGroup;
 			children = (
-				DB486A602FDF725E00BCEE1B /* StowerMac */,
+				CAFEMAS01A5DF00BCEE1B /* StowerMacMAS */,
 				DB486A5F2FDF725E00BCEE1B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -47,7 +45,7 @@
 		DB486A5F2FDF725E00BCEE1B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DB486A5E2FDF725E00BCEE1B /* StowerMac.app */,
+				CAFEMAS03A5DF00BCEE1B /* Stower.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,9 +53,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DB486A5D2FDF725E00BCEE1B /* StowerMac */ = {
+		CAFEMAS02A5DF00BCEE1B /* StowerMacMAS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DB486A692FDF725F00BCEE1B /* Build configuration list for PBXNativeTarget "StowerMac" */;
+			buildConfigurationList = CAFEMAS04A5DF00BCEE1B /* Build configuration list for PBXNativeTarget "StowerMacMAS" */;
 			buildPhases = (
 				DB486A5A2FDF725E00BCEE1B /* Sources */,
 				DB486A5B2FDF725E00BCEE1B /* Frameworks */,
@@ -68,15 +66,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				DB486A602FDF725E00BCEE1B /* StowerMac */,
+				CAFEMAS01A5DF00BCEE1B /* StowerMacMAS */,
 			);
-			name = StowerMac;
+			name = StowerMacMAS;
 			packageProductDependencies = (
 				DB486A802FE398BF00BCEE1B /* StowerMacUI */,
-				DBA5037B2FF1D7A200B53B2F /* Sparkle */,
 			);
-			productName = StowerMac;
-			productReference = DB486A5E2FDF725E00BCEE1B /* StowerMac.app */;
+			productName = StowerMacMAS;
+			productReference = CAFEMAS03A5DF00BCEE1B /* Stower.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -89,7 +86,7 @@
 				LastSwiftUpdateCheck = 2650;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
-					DB486A5D2FDF725E00BCEE1B = {
+					CAFEMAS02A5DF00BCEE1B = {
 						CreatedOnToolsVersion = 26.5;
 					};
 				};
@@ -105,14 +102,13 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				DB486A7F2FE398BF00BCEE1B /* XCLocalSwiftPackageReference ".." */,
-				DBA5037A2FF1D7A200B53B2F /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DB486A5F2FDF725E00BCEE1B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DB486A5D2FDF725E00BCEE1B /* StowerMac */,
+				CAFEMAS02A5DF00BCEE1B /* StowerMacMAS */,
 			);
 		};
 /* End PBXProject section */
@@ -144,7 +140,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -206,7 +201,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -254,12 +248,13 @@
 			};
 			name = Release;
 		};
-		DB486A6A2FDF725F00BCEE1B /* Debug */ = {
+/* REMOVED old StowerMac target-level Debug/Release — MAS-only worktree */
+		CAFEMAS05A5DF00BCEE1B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = StowerMac/StowerMac.entitlements;
+				CODE_SIGN_ENTITLEMENTS = StowerMacMAS/StowerMacMAS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2446N3925D;
@@ -268,85 +263,53 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Stower Test";
+				INFOPLIST_KEY_CFBundleDisplayName = "Stower MAS Test";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Stower uses your contacts to show names instead of phone numbers on your relationship board. Your contacts never leave this Mac.";
-				INFOPLIST_FILE = Info.plist;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				INFOPLIST_FILE = StowerMacMAS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = emilykangdev.Stower.debug;
-				PRODUCT_NAME = StowerTest;
-				REGISTER_APP_GROUPS = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.stower.mas.debug;
+				PRODUCT_NAME = Stower;
 				SDKROOT = macosx;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = macosx;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Debug;
 		};
-		DB486A6B2FDF725F00BCEE1B /* Release */ = {
+		CAFEMAS06A5DF00BCEE1B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = StowerMac/StowerMac.entitlements;
+				CODE_SIGN_ENTITLEMENTS = StowerMacMAS/StowerMacMAS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2446N3925D;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Stower;
 				INFOPLIST_KEY_NSContactsUsageDescription = "Stower uses your contacts to show names instead of phone numbers on your relationship board. Your contacts never leave this Mac.";
-				INFOPLIST_FILE = Info.plist;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
-				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
-				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				INFOPLIST_FILE = StowerMacMAS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = emilykangdev.Stower;
+				PRODUCT_BUNDLE_IDENTIFIER = app.stower.mas;
 				PRODUCT_NAME = Stower;
-				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = macosx;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 26.5;
 			};
 			name = Release;
 		};
@@ -362,11 +325,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DB486A692FDF725F00BCEE1B /* Build configuration list for PBXNativeTarget "StowerMac" */ = {
+		CAFEMAS04A5DF00BCEE1B /* Build configuration list for PBXNativeTarget "StowerMacMAS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DB486A6A2FDF725F00BCEE1B /* Debug */,
-				DB486A6B2FDF725F00BCEE1B /* Release */,
+				CAFEMAS05A5DF00BCEE1B /* Debug */,
+				CAFEMAS06A5DF00BCEE1B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -380,26 +343,12 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		DBA5037A2FF1D7A200B53B2F /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.9.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
+/* REMOVED Sparkle package reference — MAS target does not link Sparkle */
 
 /* Begin XCSwiftPackageProductDependency section */
 		DB486A802FE398BF00BCEE1B /* StowerMacUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = StowerMacUI;
-		};
-		DBA5037B2FF1D7A200B53B2F /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DBA5037A2FF1D7A200B53B2F /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

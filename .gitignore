@@ -35,3 +35,9 @@ __pycache__/
 
 # git worktrees (agent + plan workspaces)
 worktrees/
+
+# Editor/IDE settings — local preferences only.
+.vscode/
+
+# Stale MAS app copy — the canonical location is StowerMac/StowerMacMAS/.
+/StowerMessages/

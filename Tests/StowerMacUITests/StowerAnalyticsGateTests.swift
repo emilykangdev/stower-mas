@@ -35,12 +35,14 @@ import Testing
         StowerAnalytics.report(.appLaunched)
     }
 
-    @Test internal func enabledConsentCallsMakeClient() async {
+    @Test internal func enabledConsentNoOpAlways() async {
         StowerAnalytics.resetForTesting()
         defer { StowerAnalytics.resetForTesting() }
 
         let storage = StowerInMemoryLeaseStorage()
-        // Fresh storage = default-on.
+        // Fresh storage = default-on. In the MAS-only build there is no
+        // TelemetryDeck SDK, so makeClient is never called even when
+        // consent is enabled — the reporter is always a no-op.
         var makeClientCalled = false
 
         StowerAnalytics.startBackend(
@@ -49,8 +51,14 @@ import Testing
             makeClient: { _, _, _ in makeClientCalled = true }
         )
 
-        #expect(makeClientCalled == true)
-        #expect(StowerAnalytics.isEnabled() == true)
+        #expect(
+            makeClientCalled == false,
+            "makeClient is never called in MAS build (no TelemetryDeck)"
+        )
+        #expect(
+            StowerAnalytics.isEnabled() == true,
+            "Analytics should be enabled even without TelemetryDeck"
+        )
     }
 
     @Test internal func reporterSpy_recordsInOrder() {
