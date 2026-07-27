@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>method</key>
-	<string>mac-app-store</string>
+	<string>app-store-connect</string>
 	<key>teamID</key>
 	<string>2446N3925D</string>
 	<key>signingStyle</key>
