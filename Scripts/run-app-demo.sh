@@ -30,7 +30,7 @@ cd "$REPO_ROOT"
 source "$REPO_ROOT/Scripts/lib/derive-app-paths.sh"
 
 PROJECT="StowerMac/StowerMac.xcodeproj"
-SCHEME="StowerMac"
+SCHEME="StowerMacMAS"
 CONFIG="Debug"
 
 REGEN=1
