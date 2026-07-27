@@ -110,6 +110,8 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign:,productbuild: -s -k "$KEYCHAIN_PW" "$KEYCHAIN_PATH"
 
           rm "$RUNNER_TEMP/cert.p12" "$RUNNER_TEMP/installer.p12"
+          # Log certs found for debugging
+          security find-identity -p basic -v | grep -iE "distribution|installer|developer" || true
           echo "Certificates imported."
 
       - name: Install provisioning profile
