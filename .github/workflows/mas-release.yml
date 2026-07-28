@@ -5,10 +5,10 @@ name: MAS Release
 # Connect. No Sparkle, no DMG, no GitHub Release — MAS-only.
 #
 # Prerequisites (GitHub repository secrets):
-#   MAS_APP_DISTRIBUTION_P12         — base64 of Apple Distribution .p12
-#   MAS_APP_DISTRIBUTION_PASSWORD    — password for that .p12
-#   MAS_INSTALLER_DISTRIBUTION_P12   — base64 of Mac Installer Distribution .p12
-#   MAS_INSTALLER_DISTRIBUTION_PASSWORD — password for that .p12
+#   THIRD_PARTY_MAS_APP_DISTRIBUTION_P12         — base64 of app signing cert .p12
+#   THIRD_PARTY_MAS_APP_DISTRIBUTION_PASSWORD    — password for that .p12
+#   THIRD_PARTY_MAS_INSTALLER_DISTRIBUTION_P12   — base64 of installer cert .p12
+#   THIRD_PARTY_MAS_INSTALLER_DISTRIBUTION_PASSWORD — password for that .p12
 #   MAS_PROVISIONING_PROFILE         — base64 of Mac App Store provisioning profile
 #   APP_STORE_CONNECT_KEY_ID         — API key ID (e.g. BXMZW4LMSP)
 #   APP_STORE_CONNECT_ISSUER_ID      — API key issuer UUID
@@ -75,11 +75,11 @@ jobs:
 
       - name: Create temp keychain and import certificates
         env:
-          CERT_P12_BASE64: ${{ secrets.MAS_APP_DISTRIBUTION_P12 }}
-          CERT_PASSWORD: ${{ secrets.MAS_APP_DISTRIBUTION_PASSWORD }}
-          INSTALLER_P12_BASE64: ${{ secrets.MAS_INSTALLER_DISTRIBUTION_P12 }}
-          INSTALLER_PASSWORD: ${{ secrets.MAS_INSTALLER_DISTRIBUTION_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.MAS_APP_DISTRIBUTION_PASSWORD }}
+          CERT_P12_BASE64: ${{ secrets.THIRD_PARTY_MAS_APP_DISTRIBUTION_P12 }}
+          CERT_PASSWORD: ${{ secrets.THIRD_PARTY_MAS_APP_DISTRIBUTION_PASSWORD }}
+          INSTALLER_P12_BASE64: ${{ secrets.THIRD_PARTY_MAS_INSTALLER_DISTRIBUTION_P12 }}
+          INSTALLER_PASSWORD: ${{ secrets.THIRD_PARTY_MAS_INSTALLER_DISTRIBUTION_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.THIRD_PARTY_MAS_APP_DISTRIBUTION_PASSWORD }}
         run: |
           KEYCHAIN_PATH="$RUNNER_TEMP/release-signing.keychain-db"
           echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
