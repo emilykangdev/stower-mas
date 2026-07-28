@@ -266,6 +266,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Stower MAS Test";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Stower uses your contacts to show names instead of phone numbers on your relationship board. Your contacts never leave this Mac.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Emily Kang";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_FILE = StowerMacMAS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
@@ -299,6 +300,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Stower;
 				INFOPLIST_KEY_NSContactsUsageDescription = "Stower uses your contacts to show names instead of phone numbers on your relationship board. Your contacts never leave this Mac.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Emily Kang";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_FILE = StowerMacMAS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.4;
