@@ -129,6 +129,10 @@ internal struct StowerMessagesComposition {
     /// `loadMessagesAccessBookmark` closure that re-reads `StowerUserDefaultsItem`
     /// on every call, so a bookmark granted after this composition root ran takes
     /// effect on the very next load/refresh, not only after a relaunch (JC2).
+    /// The provider reads that same closure on every reader use, so a RE-grant
+    /// (a different folder picked later) invalidates its cached reader too —
+    /// nothing here has to notify the engine after `StowerRootView` writes a
+    /// freshly granted bookmark.
     ///
     /// - Parameters:
     ///   - folderName: The build-variant Application Support subfolder the

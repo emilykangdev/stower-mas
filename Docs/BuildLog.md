@@ -10,6 +10,35 @@ scheme or architecture that didn't exist yet at the time.
 
 ## Status
 
+- 2026-07-30: **`StowerDebtBoardProvider` no longer serves a stale reader across a
+  bookmark re-grant (issue #18, branch
+  `fix-stowerdebtboardprovider-reader-cache-invalidation`).**
+  Cursor Bugbot finding on PR #66, deferred out of `/address-pr` because the fix
+  was a cache-invalidation decision, not a comment patch. `sharedReader()`
+  returned the cached `activeReader` unconditionally, so only `refreshedReader()`
+  (background `refreshJudgments`) ever rebuilt it — while BOTH load paths, the
+  startup probe (`StowerMessagesStartupAdapter`) and the live board
+  (`StowerLiveBoardDataSource`), go through `sharedReader()`. A user who
+  re-granted Messages access to a different folder kept reading the OLD folder
+  until a background refresh happened to land, contradicting the public `init`'s
+  own documented "takes effect on the very next load/refresh" invariant and
+  `StowerMessagesComposition`'s JC2 comment. Fixed **inside the provider** rather
+  than by adding an `invalidate()` call the app must remember to make at every
+  future bookmark-write site: a new `readerSourceBookmark` closure (the public
+  init passes the same `loadMessagesAccessBookmark` it already takes; the DEBUG
+  demo init and the test init default to `{ nil }` = "cannot change") is read on
+  every `sharedReader()` and compared against `activeReaderBookmark`, the
+  bookmark the cached reader was opened from. Mismatch → re-open via the new
+  `openReader(bookmark:)`, which both accessors now share. Bytewise `Data`
+  comparison means a re-minted bookmark for the SAME folder
+  (`onBookmarkRefreshed`) also re-opens — one extra snapshot copy, never a missed
+  one; erring toward rebuilding is the only safe polarity. No protocol, adapter,
+  or `StowerRootView` wiring changed, so the `6b` four-file engine-import
+  allowlist is untouched. New `StowerDebtBoardReaderCacheTests` (4 tests): the
+  two re-grant tests were confirmed RED against the pre-fix `sharedReader()`, and
+  two reuse tests pin the perf invariant so the fix can't degrade into opening a
+  reader per call. Gate green: 538 tests, 88 suites.
+
 - 2026-07-29: **Riptide workspace config + `precheck.sh` fixed to work as a pre-commit hook (branch `chore/riptide-workspace-config`).**
   New `.humanlayer/workspace.json` drives Riptide's "Workspace: Now" worktree
   creation: `pathTemplate` `~/worktrees/{{ REPOBASENAME }}/{{ TASKSLUG }}` (the
