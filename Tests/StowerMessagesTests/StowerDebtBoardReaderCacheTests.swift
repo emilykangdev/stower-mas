@@ -57,6 +57,21 @@ internal struct StowerDebtBoardReaderCacheTests {
         #expect(grant.opens == [StowerFakeGrant.first])
     }
 
+    @Test("a load after a refresh reuses the reader the refresh opened")
+    internal func loadAfterRefreshReusesRefreshedReader() async throws {
+        let grant = StowerFakeGrant(bookmark: StowerFakeGrant.first)
+        let provider = makeProvider(grant: grant, cache: try StowerReplyVerdictCache.inMemory())
+
+        // `refreshJudgments` always rebuilds the reader; it must record the
+        // bookmark it opened from, or the stale recording mismatches on every
+        // later call and re-opens a reader per load and per thread tap.
+        _ = try await provider.refreshJudgments(config: config(), now: now)
+        _ = try await provider.loadDebtBoard(config: config(), now: now)
+        _ = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+
+        #expect(grant.opens == [StowerFakeGrant.first])
+    }
+
     @Test("a provider with no bookmark-backed source reuses one reader across loads")
     internal func bookmarklessSourceReusesReader() async throws {
         // The DEBUG demo initializer and the test doubles pass no bookmark, so

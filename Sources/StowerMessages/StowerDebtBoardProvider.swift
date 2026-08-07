@@ -220,12 +220,17 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
         if let activeReader, bookmark == activeReaderBookmark {
             return activeReader
         }
-        return try openReader(bookmark: bookmark)
+        return try openedReader(bookmark: bookmark)
     }
 
     /// Rebuilds the shared reader so a refresh pass reads current messages.
+    ///
+    /// Records the bookmark it opened from like every other open does. Skipping
+    /// that would leave `activeReaderBookmark` stale behind a fresh reader, so
+    /// every later `sharedReader()` would mismatch and re-open — a `chat.db` copy
+    /// per load and per thread tap.
     private func refreshedReader() throws -> StowerConversationFactsReading {
-        try openReader(bookmark: readerSourceBookmark())
+        try openedReader(bookmark: readerSourceBookmark())
     }
 
     /// Opens a reader and records the bookmark it came from, so a later
@@ -235,7 +240,7 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
     /// so a grant landing during the open records the older value and re-opens
     /// next time — the conservative direction. A throwing open leaves both
     /// fields untouched, keeping the last good reader.
-    private func openReader(bookmark: Data?) throws -> StowerConversationFactsReading {
+    private func openedReader(bookmark: Data?) throws -> StowerConversationFactsReading {
         let reader = try readerFactory()
         activeReader = reader
         activeReaderBookmark = bookmark
