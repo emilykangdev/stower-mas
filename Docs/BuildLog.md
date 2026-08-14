@@ -34,10 +34,12 @@ scheme or architecture that didn't exist yet at the time.
   (`onBookmarkRefreshed`) also re-opens — one extra snapshot copy, never a missed
   one; erring toward rebuilding is the only safe polarity. No protocol, adapter,
   or `StowerRootView` wiring changed, so the `6b` four-file engine-import
-  allowlist is untouched. New `StowerDebtBoardReaderCacheTests` (4 tests): the
-  two re-grant tests were confirmed RED against the pre-fix `sharedReader()`, and
-  two reuse tests pin the perf invariant so the fix can't degrade into opening a
-  reader per call. Gate green: 538 tests, 88 suites.
+  allowlist is untouched. New `StowerDebtBoardReaderCacheTests` (7 tests): two
+  re-grant tests were confirmed RED against the pre-fix `sharedReader()`; three
+  reuse tests pin the perf invariant so the fix can't degrade into opening a
+  reader per call; and two edge-case tests prove a grant changed during an open
+  is noticed on the next use and a throwing replacement leaves the last good
+  reader and bookmark untouched. Gate green: 541 tests, 88 suites.
 
 - 2026-07-29: **Riptide workspace config + `precheck.sh` fixed to work as a pre-commit hook (branch `chore/riptide-workspace-config`).**
   New `.humanlayer/workspace.json` drives Riptide's "Workspace: Now" worktree

@@ -90,6 +90,54 @@ internal struct StowerDebtBoardReaderCacheTests {
         #expect(grant.opens.count == 1)
     }
 
+    @Test("a bookmark changed during an open causes another open on the next use")
+    internal func changeDuringOpenReopensReader() async throws {
+        let grant = StowerFakeGrant(bookmark: StowerFakeGrant.first)
+        let provider = StowerDebtBoardProvider(
+            readerFactory: { grant.openReader(regrantingTo: StowerFakeGrant.second) },
+            readerSourceBookmark: { grant.current },
+            languageModelJudge: StowerSpyReplyJudge(),
+            cache: try StowerReplyVerdictCache.inMemory()
+        )
+
+        let before = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+        #expect(before.map(\.text) == [StowerFakeGrant.firstFolderBody])
+
+        let after = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+
+        #expect(after.map(\.text) == [StowerFakeGrant.secondFolderBody])
+        #expect(grant.opens == [StowerFakeGrant.first, StowerFakeGrant.second])
+    }
+
+    @Test("a failed replacement open preserves the last good reader and bookmark")
+    internal func failedOpenPreservesCache() async throws {
+        let grant = StowerFakeGrant(bookmark: StowerFakeGrant.first)
+        let provider = StowerDebtBoardProvider(
+            readerFactory: { try grant.openReader(failingFor: StowerFakeGrant.second) },
+            readerSourceBookmark: { grant.current },
+            languageModelJudge: StowerSpyReplyJudge(),
+            cache: try StowerReplyVerdictCache.inMemory()
+        )
+
+        _ = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+        grant.regrant(to: StowerFakeGrant.second)
+
+        await #expect(throws: StowerFakeGrantError.openFailed) {
+            _ = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+        }
+        await #expect(throws: StowerFakeGrantError.openFailed) {
+            _ = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+        }
+
+        grant.regrant(to: StowerFakeGrant.first)
+        let restored = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+
+        #expect(restored.map(\.text) == [StowerFakeGrant.firstFolderBody])
+        #expect(
+            grant.opens == [StowerFakeGrant.first, StowerFakeGrant.second, StowerFakeGrant.second]
+        )
+    }
+
     // MARK: - Helpers
 
     private func makeProvider(
@@ -157,11 +205,39 @@ private final class StowerFakeGrant: @unchecked Sendable {
 
     /// Opens a reader over whichever folder is granted right now.
     fileprivate func openReader() -> StowerStubFactsReader {
+        makeReader(bookmark: recordOpening())
+    }
+
+    /// Opens the current source while replacing the grant before the factory returns.
+    fileprivate func openReader(regrantingTo newBookmark: Data) -> StowerStubFactsReader {
         let opening = lock.withLock {
-            opened.append(bookmark)
-            return bookmark
+            let opening = recordOpeningLocked()
+            bookmark = newBookmark
+            return opening
         }
-        let body = opening == Self.second ? Self.secondFolderBody : Self.firstFolderBody
+        return makeReader(bookmark: opening)
+    }
+
+    /// Records an open attempt and fails when the current grant matches `failedBookmark`.
+    fileprivate func openReader(failingFor failedBookmark: Data) throws -> StowerStubFactsReader {
+        let opening = recordOpening()
+        guard opening != failedBookmark else {
+            throw StowerFakeGrantError.openFailed
+        }
+        return makeReader(bookmark: opening)
+    }
+
+    private func recordOpening() -> Data {
+        lock.withLock { recordOpeningLocked() }
+    }
+
+    private func recordOpeningLocked() -> Data {
+        opened.append(bookmark)
+        return bookmark
+    }
+
+    private func makeReader(bookmark: Data) -> StowerStubFactsReader {
+        let body = bookmark == Self.second ? Self.secondFolderBody : Self.firstFolderBody
         var reader = StowerStubFactsReader(records: [])
         reader.threads = [
             Self.chatID: [
@@ -176,4 +252,8 @@ private final class StowerFakeGrant: @unchecked Sendable {
         ]
         return reader
     }
+}
+
+private enum StowerFakeGrantError: Error {
+    case openFailed
 }
