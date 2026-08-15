@@ -7,6 +7,16 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
+# Step 0 — normalize the SDK environment, WHY: git runs hooks with SDKROOT
+# pointed at the CommandLineTools SDK (plus CPATH/LIBRARY_PATH at /usr/local).
+# The Xcode toolchain cannot build this package against the CLT SDK: `swift test`
+# dies with a bare `error: fatalError`, and the mismatched SDK also changes the
+# build fingerprint, forcing a full rebuild on every commit. Unsetting SDKROOT is
+# what fixes the crash; CPATH/LIBRARY_PATH are injected by the same path and have
+# no business steering this gate's build. Without this, the gate passes when run
+# by hand and fails only as a pre-commit hook — the worst possible split.
+unset SDKROOT CPATH LIBRARY_PATH
+
 # Step 1 — swift-format. FAILS if absent.
 if command -v swift-format >/dev/null 2>&1; then
     SWIFT_FORMAT=swift-format
