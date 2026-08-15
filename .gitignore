@@ -45,3 +45,6 @@ worktrees/
 
 # Stale MAS app copy — the canonical location is StowerMac/StowerMacMAS/.
 /StowerMessages/
+
+# Riptide artifacts (cloud-synced)
+.humanlayer/tasks/
