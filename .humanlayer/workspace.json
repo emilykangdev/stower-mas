@@ -1,0 +1,19 @@
+{
+  "disabled": false,
+  "pathTemplate": "~/worktrees/{{ REPOBASENAME }}/{{ TASKSLUG }}",
+  "branchTemplate": "{{ TASKSLUG }}",
+  "sourceRef": "HEAD",
+  "setupCommand": "./Scripts/new-worktree.sh",
+  "copyGlobs": [
+    ".env.keys",
+    ".claude/settings.local.json",
+    ".humanlayer/workspace.local.json"
+  ],
+  "repos": [
+    {
+      "localPath": ".",
+      "description": "Stower (Mac App Store build) — Swift monorepo",
+      "primary": true
+    }
+  ]
+}

@@ -10,6 +10,30 @@ scheme or architecture that didn't exist yet at the time.
 
 ## Status
 
+- 2026-07-29: **Riptide workspace config + `precheck.sh` fixed to work as a pre-commit hook (branch `chore/riptide-workspace-config`).**
+  New `.humanlayer/workspace.json` drives Riptide's "Workspace: Now" worktree
+  creation: `pathTemplate` `~/worktrees/{{ REPOBASENAME }}/{{ TASKSLUG }}` (the
+  layout the existing worktrees and `~/.agents/scripts/new-worktree.sh` already
+  use), `branchTemplate` `{{ TASKSLUG }}`, `sourceRef` `HEAD`, and `setupCommand`
+  `./Scripts/new-worktree.sh` — the repo-local bootstrap (`swift package resolve`
+  + `install-hooks.sh` + fail-loud lint-tool check), NOT the identically-named
+  global script, which creates the worktree and opens a cmux window and so cannot
+  serve as a post-creation setup command. `copyGlobs` carries `.env.keys` for
+  dotenvx; `tmp/` and `Models/` are deliberately excluded. `.gitignore` gains
+  `.humanlayer/workspace.local.json` (the shared `workspace.json` IS committed).
+  Found while verifying: `core.hooksPath` is set **globally** to an empty
+  `~/.git-hooks`, so `install-hooks.sh` (which targets `--git-common-dir`/hooks)
+  installed a hook git never executed — the pre-commit gate was silently dead in
+  this checkout. Scoped it with a local `core.hooksPath`, which exposed a second,
+  pre-existing bug: git runs hooks with `SDKROOT` pointed at the CommandLineTools
+  SDK, which the Xcode toolchain cannot build this package against — `swift test`
+  died with a bare `error: fatalError` after a full 562-target rebuild. New Step 0
+  in `Scripts/precheck.sh` unsets `SDKROOT`/`CPATH`/`LIBRARY_PATH`. Verified both
+  directions: `SDKROOT=…/CommandLineTools/SDKs/MacOSX.sdk ./Scripts/precheck.sh`
+  and `git hook run pre-commit` both failed before, both green after (534 tests,
+  87 suites). Net effect: the gate no longer passes by hand while failing only as
+  a hook.
+
 - 2026-07-24: **Sentry/TelemetryDeck purged from MAS-only branch.**
   Deleted 3 Sentry/TelemetryDeck source files (`StowerCrashReporting.swift`,
   `StowerSentryScrubber.swift`, `StowerTelemetryDeckReporter.swift`) and 2 test

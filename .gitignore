@@ -36,6 +36,10 @@ __pycache__/
 # git worktrees (agent + plan workspaces)
 worktrees/
 
+# Riptide workspace overrides — machine-specific (paths, disabled repos). The
+# shared config, .humanlayer/workspace.json, IS committed.
+.humanlayer/workspace.local.json
+
 # Editor/IDE settings — local preferences only.
 .vscode/
 

@@ -15,6 +15,17 @@ HOOK_DIR="$(git rev-parse --git-common-dir)/hooks"
 ROOT="$(git rev-parse --show-toplevel)"
 mkdir -p "$HOOK_DIR"
 
+# An outer core.hooksPath (commonly set globally, e.g. to a shared hooks dir) makes
+# git read hooks from THERE, not from the directory this script populates — so the
+# pre-commit gate silently never runs and every commit reports success with no
+# checks. Pin the repo-local hooks path to the directory we actually install into.
+# --git-path resolves the EFFECTIVE path, so this is a no-op without an override.
+ABS_HOOK_DIR="$(cd "$HOOK_DIR" && pwd)"
+if [ "$(git rev-parse --path-format=absolute --git-path hooks)" != "$ABS_HOOK_DIR" ]; then
+    git config --local core.hooksPath "$ABS_HOOK_DIR"
+    echo "pinned core.hooksPath -> $ABS_HOOK_DIR (an outer override would have disabled the gate)."
+fi
+
 install_hook() {
     local name="$1" target="$2" hook="$HOOK_DIR/$1"
 
