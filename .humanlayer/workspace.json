@@ -5,9 +5,6 @@
   "sourceRef": "HEAD",
   "setupCommand": "./Scripts/new-worktree.sh",
   "copyGlobs": [
-    ".env",
-    ".env.local",
-    ".env.development.local",
     ".env.keys",
     ".claude/settings.local.json",
     ".humanlayer/workspace.local.json"
