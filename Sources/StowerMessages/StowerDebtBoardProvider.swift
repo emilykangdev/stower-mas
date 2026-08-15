@@ -14,6 +14,26 @@ import os
 /// `extension` file.
 public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
     internal let readerFactory: @Sendable () throws -> StowerConversationFactsReading
+
+    /// The bookmark `readerFactory()` would open right now, read on every reader
+    /// use so a re-grant can invalidate the cached reader.
+    ///
+    /// `readerFactory()` re-reads the stored bookmark on each call, but the reader
+    /// it produces is cached (see `activeReader`) — so without this, a reader
+    /// opened from an OLD bookmark would outlive a re-grant and keep serving the
+    /// previously granted folder until a background refresh happened to rebuild
+    /// it. Comparing this against the bookmark the cached reader was opened from
+    /// is what makes `init`'s documented "takes effect on the very next
+    /// load/refresh" true for a RE-grant, not only for a first grant.
+    ///
+    /// `nil` for sources that cannot change under the provider (the DEBUG demo
+    /// source, test doubles), which therefore never invalidate. Bookmark `Data`
+    /// is compared bytewise, so a re-minted bookmark for the SAME folder (see
+    /// `onBookmarkRefreshed`) also invalidates — one extra reader open, never a
+    /// missed one. Erring toward rebuilding is the only safe polarity: a spurious
+    /// rebuild costs a snapshot copy, a missed one serves the wrong folder's data.
+    internal let readerSourceBookmark: @Sendable () -> Data?
+
     internal let resolveLanguageModelJudge: @Sendable () -> StowerReplyExpectationJudge?
     internal let modelAvailabilityResolver: @Sendable () async -> StowerModelAvailability
     internal let cache: StowerReplyVerdictCaching?
@@ -29,7 +49,16 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
     /// served from cached verdicts anyway, so reuse adds no staleness the cache
     /// did not already have. The actor serializes access; a failed rebuild keeps
     /// the last good reader.
+    ///
+    /// Reuse is scoped to ONE grant: it is only "no staleness the cache did not
+    /// already have" while the reader's bookmark is still the current one, so
+    /// `sharedReader()` re-opens when `readerSourceBookmark()` no longer matches
+    /// `activeReaderBookmark`.
     private var activeReader: StowerConversationFactsReading?
+
+    /// The bookmark `activeReader` was opened from, or `nil` when it came from a
+    /// source with no bookmark (DEBUG demo, tests) or no reader is open yet.
+    private var activeReaderBookmark: Data?
 
     /// Per-record cap on one judge call so a hung model can't stall refresh.
     ///
@@ -78,11 +107,12 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
     ///
     /// - Parameters:
     ///   - loadMessagesAccessBookmark: Reads the currently stored bookmark
-    ///     `Data`, or `nil` if none is stored. Invoked by `readerFactory()` on
-    ///     every cache-miss (a fresh `sharedReader()` or a `refreshedReader()`
-    ///     call) — never captured as a fixed value — so a bookmark granted
-    ///     after this provider was constructed takes effect on the very next
-    ///     load/refresh, not only after a relaunch.
+    ///     `Data`, or `nil` if none is stored. Never captured as a fixed value:
+    ///     it is invoked by `readerFactory()` whenever a reader is opened, AND
+    ///     on every `sharedReader()` to detect that the stored bookmark changed
+    ///     under a cached reader. So a bookmark granted — or RE-granted for a
+    ///     different folder — after this provider was constructed takes effect
+    ///     on the very next load/refresh, not only after a relaunch.
     ///   - contactsResolver: The handle-to-name resolver; denial degrades to raw
     ///     handles (M4), never an error.
     ///   - onBookmarkRefreshed: Called with freshly re-created bookmark `Data`
@@ -106,6 +136,7 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
                 onBookmarkRefreshed: onBookmarkRefreshed
             )
         }
+        readerSourceBookmark = loadMessagesAccessBookmark
         // Resolve the system judge per call, not once at init: a provider built
         // while Apple Intelligence is still downloading picks the model up when it
         // comes online.
@@ -134,6 +165,9 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
                     contactsResolver: contactsResolver
                 )
             }
+            // A fixed `demoSourceURL` cannot change under the provider, so the
+            // reader never needs re-opening for a source change.
+            readerSourceBookmark = { nil }
             resolveLanguageModelJudge = { Self.makeSystemLanguageModelJudge() }
             modelAvailabilityResolver = { StowerLanguageModelAvailability.current() }
             cache = cacheURL.flatMap(Self.openCache)
@@ -147,8 +181,11 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
     /// is consulted on each pass. `modelAvailabilityResolver` injects each typed
     /// availability state so tests assert load/refresh route before touching the
     /// reader. Availability is no longer inferred from a nil judge.
+    /// `readerSourceBookmark` defaults to a source that never changes; a test
+    /// models a re-grant by returning different `Data` from it.
     internal init(
         readerFactory: @escaping @Sendable () throws -> StowerConversationFactsReading,
+        readerSourceBookmark: @escaping @Sendable () -> Data? = { nil },
         languageModelJudge: StowerReplyExpectationJudge?,
         cache: StowerReplyVerdictCaching?,
         windowDays: Int = 180,
@@ -158,6 +195,7 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
         }
     ) {
         self.readerFactory = readerFactory
+        self.readerSourceBookmark = readerSourceBookmark
         resolveLanguageModelJudge = languageModelJudgeResolver ?? { languageModelJudge }
         self.modelAvailabilityResolver = modelAvailabilityResolver
         self.cache = cache
@@ -169,20 +207,43 @@ public actor StowerDebtBoardProvider: StowerDebtBoardProviding {
         await modelAvailabilityResolver()
     }
 
-    /// The shared reader, opening one on first use (load / thread-tap path).
+    /// The shared reader, opening one on first use — and re-opening it when the
+    /// grant it was opened from is no longer current (load / thread-tap path).
+    ///
+    /// The re-open is what keeps a re-grant honest: the load path (both the
+    /// startup probe and the live board) comes through here, so a user who picks
+    /// a different Messages folder reads from it on the very next load rather
+    /// than waiting for a background `refreshJudgments` pass to rebuild the
+    /// reader.
     private func sharedReader() throws -> StowerConversationFactsReading {
-        if let activeReader {
+        let bookmark = readerSourceBookmark()
+        if let activeReader, bookmark == activeReaderBookmark {
             return activeReader
         }
-        let reader = try readerFactory()
-        activeReader = reader
-        return reader
+        return try openedReader(bookmark: bookmark)
     }
 
     /// Rebuilds the shared reader so a refresh pass reads current messages.
+    ///
+    /// Records the bookmark it opened from like every other open does. Skipping
+    /// that would leave `activeReaderBookmark` stale behind a fresh reader, so
+    /// every later `sharedReader()` would mismatch and re-open — a `chat.db` copy
+    /// per load and per thread tap.
     private func refreshedReader() throws -> StowerConversationFactsReading {
+        try openedReader(bookmark: readerSourceBookmark())
+    }
+
+    /// Opens a reader and records the bookmark it came from, so a later
+    /// `sharedReader()` can tell whether it still matches the current grant.
+    ///
+    /// The bookmark is read BEFORE the open (by the caller) and recorded after,
+    /// so a grant landing during the open records the older value and re-opens
+    /// next time — the conservative direction. A throwing open leaves both
+    /// fields untouched, keeping the last good reader.
+    private func openedReader(bookmark: Data?) throws -> StowerConversationFactsReading {
         let reader = try readerFactory()
         activeReader = reader
+        activeReaderBookmark = bookmark
         return reader
     }
 

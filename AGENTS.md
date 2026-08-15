@@ -7,6 +7,9 @@ rules there.
 You are working in a Swift monorepo for an always-local AI recall app.
 Apply the following constraints to every change you make.
 
+USE CONTEXT.md to describe objects and relationships for this specific codebase when explaining designs. 
+Besides general SWE concepts, don't make up or arbitrarily decide on words to explain objects or relationships in this codebase.
+
 ## Architecture rules
 
 - Do not import `StowerPhotos` or `StowerMessages` from `StowerCore`.
