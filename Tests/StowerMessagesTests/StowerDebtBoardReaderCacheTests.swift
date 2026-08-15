@@ -41,6 +41,28 @@ internal struct StowerDebtBoardReaderCacheTests {
         #expect(after.map(\.text) == [StowerFakeGrant.secondFolderBody])
     }
 
+    @Test("a re-minted bookmark for the same folder still opens a new reader")
+    internal func remintedBookmarkForSameFolderReopens() async throws {
+        let grant = StowerFakeGrant(bookmark: StowerFakeGrant.first)
+        let provider = makeProvider(grant: grant, cache: try StowerReplyVerdictCache.inMemory())
+
+        let before = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+        #expect(before.map(\.text) == [StowerFakeGrant.firstFolderBody])
+
+        // `onBookmarkRefreshed` persists a re-minted token for the SAME folder:
+        // the bytes change, the folder does not.
+        grant.regrant(to: StowerFakeGrant.firstReminted)
+        let after = try await provider.recentMessages(chatID: StowerFakeGrant.chatID, limit: 10)
+
+        // The comparison is bytewise, not folder-identity, so this re-opens even
+        // though nothing moved. That is the deliberate direction: a wasted
+        // snapshot copy is cheaper than reusing a reader over a folder the user
+        // no longer granted. Comparing resolved folders instead would make this
+        // reuse — and would silently pass every other test in this suite.
+        #expect(after.map(\.text) == [StowerFakeGrant.firstFolderBody])
+        #expect(grant.opens == [StowerFakeGrant.first, StowerFakeGrant.firstReminted])
+    }
+
     // MARK: - Reuse still holds while the grant is unchanged
 
     @Test("an unchanged bookmark reuses one reader across repeated loads and thread taps")
@@ -169,6 +191,15 @@ private final class StowerFakeGrant: @unchecked Sendable {
 
     /// The bookmark a later re-grant stores over it.
     fileprivate static let second = Data("bookmark-folder-two".utf8)
+
+    /// A re-minted bookmark for the SAME folder as `first`: different bytes,
+    /// identical contents.
+    ///
+    /// Models what `onBookmarkRefreshed` persists after a stale bookmark
+    /// resolves — the folder never changed, only the token did. `makeReader`
+    /// maps anything that is not `second` to `firstFolderBody`, so a reader
+    /// opened from this serves exactly what `first` would.
+    fileprivate static let firstReminted = Data("bookmark-folder-one-reminted".utf8)
 
     /// The one conversation both folders happen to carry, with different bodies.
     fileprivate static let chatID = "chat-1"
