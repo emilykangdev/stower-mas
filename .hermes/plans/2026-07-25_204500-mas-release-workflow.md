@@ -79,6 +79,50 @@ mas-release.yml workflow_dispatch:
   10. Clean up: delete temp keychain
 ```
 
+## Expected output
+
+When the workflow is triggered manually from GitHub Actions, here's what happens at each stage:
+
+### 1. Workflow starts (~2 min)
+Runner boots macOS 26, checks out the repo, selects Xcode.
+
+### 2. Cert + profile setup (~30 sec)
+Temp keychain created, Apple Distribution + Mac Installer certs imported, provisioning profile placed, API key written to disk.
+
+### 3. Archive (~5-8 min)
+`xcodebuild archive -scheme StowerMacMAS -configuration Release` produces `StowerMac.xcarchive`. A build time error here means Swift compilation or resource copy is broken for the Release config.
+
+### 4. Export (~30 sec)
+`xcodebuild -exportArchive` wraps the signed `.app` inside a `.pkg` using the provisioning profile. Output: `Stower.pkg` at `$RUNNER_TEMP/export/`. A failure here means signing or profile mismatch — typically either the wrong cert is installed or the provisioning profile doesn't match the bundle ID.
+
+### 5. Verification (~5 sec)
+- `pkgutil --check-signature` confirms the `.pkg` is signed with Apple Distribution cert (shows "signed by Apple Distribution: Emily Kang").
+- Size gate: `.pkg` must be >1MB (a degenerate empty build is caught fast).
+
+### 6. Upload to App Store Connect (~2-5 min)
+`xcrun altool --upload-package Stower.pkg --type macos --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>` uploads the package. Output:
+```
+No errors uploading 'path/to/Stower.pkg'
+Upload: SUCCESS
+```
+A failure here means either the API key lacks permissions, or the bundle ID doesn't match an existing app record in App Store Connect.
+
+### 7. The build in App Store Connect (~5-10 min for processing)
+After successful upload, Apple processes the build. You get an email when processing completes. The build appears under the **TestFlight tab** in App Store Connect — this is where ALL uploaded builds land regardless of whether you use TestFlight.
+
+You do NOT need to use TestFlight beta testing. To submit for review directly:
+1. Go to the **App Store** tab (not TestFlight) in App Store Connect
+2. Under the version you're preparing, click **+** next to **Build**
+3. Select the uploaded build from the list
+4. Fill in required metadata, then **Submit for Review**
+
+### Gotchas
+- **Missing Compliance**: If the build shows a yellow triangle in TestFlight, you need to answer export compliance questions before it's selectable for App Review. Click the triangle, answer "No" to encryption questions.
+- **Xcode 26 altool bug**: Forums report a known issue where altool may pick the wrong Apple ID with multiple bundle IDs. Workaround: add `--apple-id <numeric_app_id>` to the altool command if builds don't appear after upload.
+
+### Error on first run
+The most likely first-run failure is the `-exportArchive` step failing because `xcodebuild` can't find or match the provisioning profile. The error message will indicate whether the profile name or UUID is wrong. Fix: update the `provisioningProfiles` value in `ExportOptionsMAS.plist` to match the profile's actual UUID (extract with `security cms -D -i profile.provisionprofile | plutil -extract UUID raw -`) instead of the human-readable name.
+
 ## §Surface
 
 - **`~/.appstoreconnect/private_keys/`** — created and written on the runner; torn down with the VM
@@ -265,10 +309,14 @@ grep -q 'StowerMacMAS' .github/workflows/mas-release.yml && echo "Scheme OK"
 - [ ] Secrets referenced match what's actually stored in the repo (no typos)
 - [ ] First dry-run on CI produces an uploaded .pkg in TestFlight
 
-## Open questions
+## Resolved open questions
 
-1. **Does `signingStyle=manual` in `ExportOptionsMAS.plist` need a `provisioningProfiles` dict?** The current plist has `signingStyle=manual` + `signingCertificate=Apple Distribution` but no `provisioningProfiles` key. With the profile installed on the runner (not referenced in the plist), `xcodebuild` may still find it by bundle ID. Test this first; add the key if export fails.
+All three open questions have been investigated and resolved before implementation:
 
-2. **What's the actual `--asc-public-id` value for `altool --upload-package`?** The Franz blog post used it, but some workflows omit it. Resolve: try without it first (many modern workflows do). The `--apple-id` (App Store Connect app ID numeric) may also be optional if using API key auth. Test on first upload.
+1. **`provisioningProfiles` needed for `signingStyle=manual`** — **RESOLVED: YES, it's required.** Apple's docs are explicit: "For manual signing only. Specify the provisioning profile to use for each executable in your app." Added `provisioningProfiles` dict to `ExportOptionsMAS.plist` mapping `emilykangdev.Stower` → `Stower MAS App Store` (the profile name, not UUID, for readability).
 
-3. **Does Apple require `--bundle-short-version-string` and `--bundle-version` flags on `altool --upload-package`?** The Franz blog includes them, but API-key-authenticated uploads may derive these from the .pkg itself. If omitting them fails, add them by extracting from the archive's Info.plist with PlistBuddy.
+2. **Does `--asc-public-id` need to be set on `altool --upload-package`?** — **RESOLVED: No.** With API key auth (`--apiKey` + `--apiIssuer`), flags like `--asc-public-id`, `--apple-id`, and `--bundle-id` are unnecessary. The API key authenticates the team, and the .pkg carries the bundle ID internally. Omitted from the workflow.
+
+3. **Are `--bundle-short-version-string` and `--bundle-version` required?** — **RESOLVED: No.** With API key auth, altool reads these from the .pkg's metadata automatically. No extra flags needed.
+
+Also resolved during investigation: the bundle ID in the Xcode project (`app.stower.mas`) didn't match the provisioning profile's App ID (`emilykangdev.Stower`). Changed `PRODUCT_BUNDLE_IDENTIFIER` to `emilykangdev.Stower` (release) and `emilykangdev.Stower.debug` (debug) in `project.pbxproj`.
