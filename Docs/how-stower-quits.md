@@ -15,6 +15,10 @@ procedure then consults a checkpoint before honoring the request:
 own quit sequence, no route can route around it. That is the design's safety: the drain does
 not need to know *why* the app is quitting, because it always runs first.
 
+**The invariant, in one sentence:** one gate for all routes, and the gate's reach must not
+depend on the window being alive — every quit passes through `applicationShouldTerminate`, and
+the drain it runs must hold its target strongly so a closed window can never hollow it out.
+
 ## What the checkpoint does: park, drain, release
 
 ```mermaid
