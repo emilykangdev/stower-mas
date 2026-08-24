@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The Settings scene root, housing all app preferences.
 ///
-/// Presented via the single `Settings { }` scene in `StowerMacApp`. Houses the
+/// Presented via the single `Settings { }` scene in `ApplicationDefinition`. Houses the
 /// Privacy pane (analytics consent) plus any `additionalPanes` the app target
 /// supplies — e.g. the updater pane, which lives in the StowerMac app target and
 /// cannot be referenced from this library module. Each supplied pane must carry

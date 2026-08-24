@@ -4,7 +4,8 @@ import SwiftUI
 /// Squeezy purchase email, activate once, then into the board.
 ///
 /// Mirrors `StowerModelUnavailableView` on `StowerOnboardingPane`. The typed
-/// text is a `@Binding` owned by `StowerRootView` (whose identity is stable),
+/// text is a `@Binding` owned by `StowerApplicationWindowContentView` (whose
+/// identity is stable),
 /// so it survives an in-flight activate and is still there when an
 /// activation error returns to this screen. This is the only screen from
 /// which the app makes a network call; the message says so.

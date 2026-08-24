@@ -22,7 +22,7 @@ public enum StowerDiagnostics {
 
     /// Initializes the analytics backend behind the shared consent gate.
     ///
-    /// The production entry point for `StowerMacApp.init()`. When consent is
+    /// The production entry point for `ApplicationDefinition.init()`. When consent is
     /// off this is a complete no-op — no analytics backend starts.
     ///
     /// The injectable form used by tests is `internal`; this public wrapper

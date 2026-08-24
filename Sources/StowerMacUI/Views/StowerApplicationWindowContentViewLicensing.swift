@@ -1,16 +1,16 @@
 import AppKit
 import SwiftUI
 
-/// `StowerRootView`'s licensing/trial/banner concern: the F2/F3 board banner
-/// state, activation, the consent-card and trial-expiry background timers, and
-/// the Lemon Squeezy checkout launch.
+/// `StowerApplicationWindowContentView`'s licensing/trial/banner concern: the
+/// F2/F3 board banner state, activation, the consent-card and trial-expiry
+/// background timers, and the Lemon Squeezy checkout launch.
 ///
 /// Split into this extension (the same split-across-files posture as
 /// `StowerBoardViewModel`'s `Drafts`/`Load`/`Triage` extensions) so the primary
-/// file stays focused on the screen switch and view composition. All `@State`
-/// this extension reads/writes is declared `internal` on the primary type,
-/// since a stored property can't live in an extension.
-extension StowerRootView {
+/// file stays focused on the `currentScreen` switch and view composition. All
+/// `@State` this extension reads/writes is declared `internal` on the primary
+/// type, since a stored property can't live in an extension.
+extension StowerApplicationWindowContentView {
     /// The board's current bottom-banner state (F2/F3), recomputed on every
     /// render from the cached trial badge, the F2 session flag, and whether the
     /// pre-F3 badge has been dismissed.
@@ -37,17 +37,17 @@ extension StowerRootView {
         return resolved
     }
 
-    /// Activates `key` via the model, then — on success — fires the F1
-    /// confirmation alert (the model's `.activate` reruns startup into the
-    /// board).
+    /// Activates `key` via the startup model, then — on success — fires the F1
+    /// confirmation alert (the startup model's `.activate` reruns startup into
+    /// the board).
     ///
     /// Success is keyed off `activate(key:)`'s return value, NOT the rerun's
     /// terminal state: a successful activation persists the license before the
     /// rerun, and that rerun can legitimately stop short of the board
     /// (messages-access onboarding, `StowerModelUnavailableView`). The user still paid and
     /// activated, so F1 must fire on every success path — the alert is attached
-    /// at `StowerRootView.body`'s root, so it presents over whichever screen
-    /// the rerun lands on.
+    /// at `StowerApplicationWindowContentView.body`'s root, so it presents over
+    /// whichever screen the rerun lands on.
     ///
     /// Refreshes `trialBadge` explicitly here rather than relying on the board's
     /// `onAppear` to refire: a mid-trial activation (F2/gear-menu entry) commits
@@ -57,9 +57,9 @@ extension StowerRootView {
     /// to `nil` at this point, so a direct read here is the correct fix either way.
     internal func activate(key: String) {
         Task {
-            guard await model.activate(key: key) else { return }
-            await model.activeRun?.value
-            trialBadge = model.trialBadge()
+            guard await startupModel.activate(key: key) else { return }
+            await startupModel.activeRun?.value
+            trialBadge = startupModel.trialBadge()
             licenseKey = ""
             boughtThisSession = false
             showPurchaseThanks = true
@@ -69,7 +69,7 @@ extension StowerRootView {
     /// Jumps to the key-entry screen from the board (gear menu / F2 banner,
     /// JC5) without waiting for the trial to expire.
     internal func jumpToKeyEntry() {
-        model.showLicenseEntry()
+        startupModel.showLicenseEntry()
     }
 
     /// Schedules the analytics consent card to appear after ~60 seconds of
@@ -115,8 +115,8 @@ extension StowerRootView {
             }
             try? await Task.sleep(for: .seconds(expiry.timeIntervalSinceNow))
             guard !Task.isCancelled else { return }
-            await model.refreshLicenseIfOnBoard()
-            trialBadge = model.trialBadge()
+            await startupModel.refreshLicenseIfOnBoard()
+            trialBadge = startupModel.trialBadge()
         }
     }
 

@@ -7,7 +7,7 @@ import Testing
 /// The board view-model's mark-as-sent undo behaviors (D2).
 ///
 /// Covers the reused `StowerDismissUndoBar`'s Undo button, ⌘Z driving the shared
-/// `UndoManager` directly (`StowerMacApp.performUndo` — NOT `undoLastDismiss`),
+/// `UndoManager` directly (`ApplicationDefinition.performUndo` — NOT `undoLastDismiss`),
 /// redo, and the flaky-write retry parity for `markSent`/`unmarkSent` (I12/I13).
 ///
 /// Split out from `StowerBoardViewModelDraftResolveTests` (which covers the
@@ -63,7 +63,7 @@ import Testing
         #expect(model.drafts[row.draftKey]?.resolvedAt != nil)
 
         model.unmarkSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(model.drafts[row.draftKey]?.resolvedAt == nil)
         #expect(model.drafts[row.draftKey]?.body == "call back")
@@ -89,7 +89,7 @@ import Testing
         #expect(model.undoBar?.kind == .markedSent)
 
         model.undoLastDismiss()
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(model.drafts[row.draftKey]?.resolvedAt == nil)
         #expect(model.undoBar == nil)
@@ -99,7 +99,7 @@ import Testing
     @Test("Cmd-Z (undoManager.undo directly, not undoLastDismiss) also reverses a draft resolve")
     internal func cmdZUndoesDraftResolve() async {
         // Regression test for a Codex P2 finding: the app target's ⌘Z calls
-        // `undoManager.undo()` DIRECTLY (StowerMacApp.performUndo), never
+        // `undoManager.undo()` DIRECTLY (ApplicationDefinition.performUndo), never
         // `undoLastDismiss`. markSent must register on that same UndoManager so
         // ⌘Z reverses the resolve, not merely the bar's Undo button.
         let row = draftRow(chatID: "c1", handle: "alice")
@@ -117,7 +117,7 @@ import Testing
         #expect(model.drafts[row.draftKey]?.resolvedAt != nil)
 
         undoManager.undo()
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(model.drafts[row.draftKey]?.resolvedAt == nil)
         #expect(try await store.all()[row.draftKey]?.resolvedAt == nil)
@@ -138,11 +138,11 @@ import Testing
 
         model.markSent(row)
         undoManager.undo()
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(model.drafts[row.draftKey]?.resolvedAt == nil)
 
         undoManager.redo()
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(model.drafts[row.draftKey]?.resolvedAt != nil)
         #expect(try await store.all()[row.draftKey]?.resolvedAt != nil)
@@ -164,7 +164,7 @@ import Testing
 
         await store.setFailNextWrites(1)
         model.markSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(try await store.all()[row.draftKey]?.resolvedAt != nil)
     }
@@ -182,11 +182,11 @@ import Testing
         await model.loadTaskHandle?.value
 
         model.markSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
 
         await store.setFailNextWrites(1)
         model.unmarkSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(try await store.all()[row.draftKey]?.resolvedAt == nil)
     }
@@ -212,7 +212,7 @@ import Testing
         await model.loadTaskHandle?.value
 
         model.markSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(try await store.all()[row.draftKey]?.resolvedAt != nil)
 
         // Arm the NEXT write (unmarkSent's) to fail once, so it stays queued in
@@ -230,7 +230,7 @@ import Testing
         // it back to resolved because the fresh read is still stale.
         #expect(model.drafts[row.draftKey]?.resolvedAt == nil)
 
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(try await store.all()[row.draftKey]?.resolvedAt == nil)
     }
 
@@ -273,7 +273,7 @@ import Testing
 
         // Undo now finds the entry and enqueues the reversal, so disk ends active.
         model.unmarkSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(model.drafts[row.draftKey]?.resolvedAt == nil)
         #expect(try await store.all()[row.draftKey]?.resolvedAt == nil)
     }

@@ -4,7 +4,8 @@ import Observation
 /// The observable state behind the feedback sheet: the typed message/email, the
 /// send phase, and the send + analytics wiring.
 ///
-/// Constructed once as `@State` in `StowerRootView` and injected into the board,
+/// Constructed once as `@State` in `StowerApplicationWindowContentView` and
+/// injected into the board,
 /// so an in-progress message survives a re-render (never re-created inline in a
 /// view body). The `client`, `metadata` provider, and `analyticsReporter` are
 /// injected so the send path is unit-tested without the network or a live bundle.

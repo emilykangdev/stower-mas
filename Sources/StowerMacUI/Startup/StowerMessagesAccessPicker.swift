@@ -11,7 +11,8 @@ import Foundation
 /// `StowerUserDefaultsItem`; `StowerCLI`/`StowerChatDBInspector` never persist
 /// at all, JC1) so this type stays a pure present-validate-return step.
 ///
-/// `StowerMacUI`'s second `public` symbol ever, alongside `StowerRootView`
+/// `StowerMacUI`'s second `public` symbol ever, alongside
+/// `StowerApplicationWindowContentView`
 /// (JC7) — a deliberate, named exception to the module's one-public-symbol
 /// convention, made so `StowerCLI`/`StowerChatDBInspector` exercise the exact
 /// production picker code instead of a duplicated reimplementation.

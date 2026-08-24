@@ -109,7 +109,7 @@ import Testing
 
         #expect(model.drafts[row.draftKey]?.resolvedAt != nil)
         #expect(model.drafts[row.draftKey]?.body == "call back")
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(try await store.all()[row.draftKey]?.resolvedAt != nil)
     }
 
@@ -196,7 +196,7 @@ import Testing
         #expect(model.onBoardDrafts.isEmpty)
 
         // Let the queued write actually land, then confirm the store agrees.
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(try await store.all()[row.draftKey]?.resolvedAt != nil)
     }
 
@@ -221,7 +221,7 @@ import Testing
         // markSent's UPDATE, never after (which would revert resolved_at to NULL).
         model.draftBinding(for: row.draftKey).wrappedValue = "call back soon"
         model.markSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
 
         let record = await store.all()[row.draftKey]
         #expect(record?.resolvedAt != nil)
@@ -248,7 +248,7 @@ import Testing
         await model.loadTaskHandle?.value
 
         model.markSent(row)
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(model.inflightWrites[row.draftKey] == nil)
 
         // Undo it directly in the STORE (bypassing the VM) so the next reload's

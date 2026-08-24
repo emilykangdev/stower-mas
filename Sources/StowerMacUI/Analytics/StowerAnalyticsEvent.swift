@@ -14,7 +14,7 @@ internal enum StowerAnalyticsEvent: Sendable {
 
     /// The app finished launching and analytics are enabled.
     ///
-    /// Emitted once per launch at `StowerMacApp` startup. **Per-launch.**
+    /// Emitted once per launch at `ApplicationDefinition` startup. **Per-launch.**
     case appLaunched
 
     /// The user quit the app.

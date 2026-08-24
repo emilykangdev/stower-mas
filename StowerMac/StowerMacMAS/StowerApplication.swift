@@ -1,5 +1,5 @@
 //
-//  StowerMacMASApp.swift
+//  StowerApplication.swift
 //  StowerMacMAS
 //
 //  Created by Emily Kang on 7/22/26.
@@ -12,8 +12,9 @@ import SwiftUI
 /// MAS-distributed Stower: no Sparkle, no Sentry, no TelemetryDeck, no diagnostics
 /// initialization, no analytics reporting — the app is privacy-first on the App Store.
 @main
-struct StowerMacMASApp: App {
-    @NSApplicationDelegateAdaptor(StowerAppDelegate.self) private var appDelegate
+struct ApplicationDefinition: App {
+    @NSApplicationDelegateAdaptor(ApplicationLifecycleDelegate.self)
+    private var applicationLifecycleDelegate
 
     /// The app-owned `UndoManager` (A4): ONE stable instance the board's dismiss/undo
     /// registrations drive, so the undo stack survives a board reload (unlike
@@ -23,9 +24,14 @@ struct StowerMacMASApp: App {
     private let undoManager = UndoManager()
 
     var body: some Scene {
+        applicationWindowScene
+        settingsScene
+    }
+
+    private var applicationWindowScene: some Scene {
         WindowGroup {
-            StowerMacMASContainer(
-                flusher: appDelegate.flusher,
+            ApplicationWindowContentConstructionView(
+                terminationDrain: applicationLifecycleDelegate.terminationDrain,
                 undoManager: undoManager
             )
         }
@@ -38,7 +44,9 @@ struct StowerMacMASApp: App {
                     .keyboardShortcut("z", modifiers: [.command, .shift])
             }
         }
+    }
 
+    private var settingsScene: some Scene {
         Settings {
             StowerSettingsView()
         }
@@ -66,9 +74,10 @@ struct StowerMacMASApp: App {
 
 /// The app delegate: drains in-flight draft writes on quit so a graceful Cmd-Q
 /// loses nothing (JC2). No analytics session end reporting (no analytics backend).
-final class StowerAppDelegate: NSObject, NSApplicationDelegate {
-    /// Wired to the board view-model's `flushAll()` by `StowerRootView`.
-    let flusher = StowerTerminationFlusher()
+final class ApplicationLifecycleDelegate: NSObject, NSApplicationDelegate {
+    /// Wired to the board view-model's `drainPendingWork()` by
+    /// `StowerApplicationWindowContentView`.
+    let terminationDrain = StowerTerminationDrain()
 
     func applicationShouldTerminate(
         _ sender: NSApplication
@@ -76,24 +85,26 @@ final class StowerAppDelegate: NSObject, NSApplicationDelegate {
         // Drain pending draft writes, then let the app quit. No analytics
         // session-end report — there is no analytics backend in the MAS target.
         Task { @MainActor in
-            await flusher.flushPendingWork()
+            await terminationDrain.drainPendingWork()
             NSApp.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
     }
 }
 
-/// Builds the root once, surfacing a startup failure if an essential store (the
-/// precious drafts database) can't be opened on a true disk-level fault.
-/// No diagnostics backends, no license gating — MAS privacy-first build.
-private struct StowerMacMASContainer: View {
-    @State private var root: Result<StowerRootView, Error>
+/// Builds the Application Window content once, surfacing a startup failure if an
+/// essential store (the precious drafts database) can't be opened on a true
+/// disk-level fault. No diagnostics backends, no license gating — MAS
+/// privacy-first build.
+private struct ApplicationWindowContentConstructionView: View {
+    @State private var applicationWindowContentResult:
+        Result<StowerApplicationWindowContentView, Error>
 
-    init(flusher: StowerTerminationFlusher, undoManager: UndoManager) {
-        _root = State(
+    init(terminationDrain: StowerTerminationDrain, undoManager: UndoManager) {
+        _applicationWindowContentResult = State(
             initialValue: Result {
-                try StowerRootView(
-                    flusher: flusher,
+                try StowerApplicationWindowContentView(
+                    terminationDrain: terminationDrain,
                     undoManager: undoManager,
                     analyticsReporter: StowerNoOpAnalyticsReporter()
                 )
@@ -102,7 +113,7 @@ private struct StowerMacMASContainer: View {
     }
 
     var body: some View {
-        switch root {
+        switch applicationWindowContentResult {
         case .success(let view):
             view
         case .failure:

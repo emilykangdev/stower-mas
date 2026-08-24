@@ -4,7 +4,8 @@ import Foundation
 ///
 /// Encoded by `rawValue` in the feedback payload. `unlicensed` is a defensive
 /// default only — a user on the board is always trial or paid
-/// (`StowerRootView.screen` routes unlicensed users to the paywall, never the
+/// (`StowerApplicationWindowContentView.currentScreen` routes unlicensed users
+/// to the paywall, never the
 /// board).
 internal enum StowerFeedbackLicenseStatus: String, Sendable, Equatable {
     case trial

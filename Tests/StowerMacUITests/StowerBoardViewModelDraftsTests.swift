@@ -59,7 +59,7 @@ import Testing
         await model.loadTaskHandle?.value
 
         model.draftBinding(for: row.draftKey).wrappedValue = "call back"
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(await store.all()[row.draftKey]?.body == "call back")
         #expect(model.drafts[row.draftKey]?.body == "call back")
@@ -78,7 +78,7 @@ import Testing
 
         model.openComposer(for: row)
         model.draftBinding(for: row.draftKey).wrappedValue = "new text"
-        await model.flushAll()
+        await model.drainPendingWork()
         // The store diverges to an external value; a reload must NOT clobber the edit.
         try? await store.upsert(key: row.draftKey, body: "external")
 
@@ -100,12 +100,12 @@ import Testing
         await model.loadTaskHandle?.value
 
         model.draftBinding(for: row.draftKey).wrappedValue = "draft me"
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(await store.all()[row.draftKey]?.body == "draft me")
 
         // Clear to whitespace — must delete, not persist an empty row that resurrects.
         model.draftBinding(for: row.draftKey).wrappedValue = "   "
-        await model.flushAll()
+        await model.drainPendingWork()
         #expect(model.drafts[row.draftKey] == nil)
         #expect(await store.all()[row.draftKey] == nil)
 
@@ -130,7 +130,7 @@ import Testing
         // bounded retry must land the body rather than drop it on the floor.
         await store.setFailNextWrites(1)
         model.draftBinding(for: row.draftKey).wrappedValue = "must survive"
-        await model.flushAll()
+        await model.drainPendingWork()
 
         #expect(try await store.all()[row.draftKey]?.body == "must survive")
     }

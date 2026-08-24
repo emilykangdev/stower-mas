@@ -47,7 +47,8 @@ internal struct StowerBoardView: View {
 
     /// The feedback sheet's state + send logic.
     ///
-    /// Constructed once in `StowerRootView` and injected so an in-progress
+    /// Constructed once in `StowerApplicationWindowContentView` and injected so
+    /// an in-progress
     /// message survives a re-render (JC2). The `Feedback` toolbar button presents
     /// the `.sheet`.
     internal let feedbackModel: StowerFeedbackModel

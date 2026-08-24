@@ -162,7 +162,7 @@ extension StowerBoardViewModel {
     /// a graceful quit loses neither a draft nor a just-issued dismiss/mute/unmute.
     ///
     /// Called from `applicationShouldTerminate` (JC2); never reached by `cancel()`.
-    internal func flushAll() async {
+    internal func drainPendingWork() async {
         for handle in inflightWrites.values {
             await handle.task?.value
         }
@@ -315,7 +315,7 @@ extension StowerBoardViewModel {
     /// silently vanish while the UI shows it saved.
     ///
     /// Clears `inflightWrites[key]` when THIS call's handle is still the one
-    /// registered there (reference identity via `StowerDraftWriteHandle`) — an
+    /// registered there (reference identity via `DraftWriteTaskHandle`) — an
     /// older write's cleanup running late must never wipe a NEWER write's
     /// still-in-flight entry for the same key. Without this, the I10
     /// `mergeDrafts` guard's `inflightWrites[key] != nil` check stays true
@@ -327,7 +327,7 @@ extension StowerBoardViewModel {
         let previous = inflightWrites[key]
         let limit = Self.draftWriteRetryLimit
         let backoff = Self.draftWriteRetryBackoff
-        let handle = StowerDraftWriteHandle()
+        let handle = DraftWriteTaskHandle()
         handle.task = Task { [weak self] in
             await previous?.task?.value
             for attempt in 1...limit {
@@ -349,7 +349,7 @@ extension StowerBoardViewModel {
     private static let draftWriteRetryLimit = 3
 
     /// The backoff between write-through retries (rides out a transient lock /
-    /// briefly-full disk without blocking a graceful quit's `flushAll`).
+    /// briefly-full disk without blocking a graceful quit's `drainPendingWork`).
     private static let draftWriteRetryBackoff: Duration = .milliseconds(50)
 }
 
@@ -361,9 +361,9 @@ extension StowerBoardViewModel {
 /// so an older write's cleanup can never wipe a still-in-flight newer entry.
 /// `task` starts `nil` (the task's own closure needs `handle` to exist before the
 /// task itself can be constructed) and is set immediately after, before any other
-/// code can observe the handle — `flushAll` only reads it after `enqueueDraftWrite`
-/// returns, by which point it is always non-`nil`.
-internal final class StowerDraftWriteHandle {
+/// code can observe the handle — `drainPendingWork` only reads it after
+/// `enqueueDraftWrite` returns, by which point it is always non-`nil`.
+internal final class DraftWriteTaskHandle {
     /// The write task this handle wraps, or `nil` only during its own construction.
     internal var task: Task<Void, Never>?
 

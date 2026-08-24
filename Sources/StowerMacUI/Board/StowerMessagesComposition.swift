@@ -10,7 +10,8 @@ import StowerMessages
 /// startup adapter and the board adapter is load-bearing: the snapshot reader, the
 /// disposable verdict cache, and `refreshJudgments`' single-flight coalescing are
 /// all provider state, so two providers would split them and each re-copy the
-/// Messages database. `StowerRootView` builds this once and holds both boundaries.
+/// Messages database. `StowerApplicationWindowContentView` builds this once and
+/// holds both boundaries.
 internal struct StowerMessagesComposition {
     /// The startup boundary the `StowerStartupModel` drives.
     internal let startup: any StowerStartupProviding
@@ -42,7 +43,7 @@ internal struct StowerMessagesComposition {
     /// The persisted security-scoped bookmark for the user's granted Messages
     /// folder.
     ///
-    /// Exposed so `StowerRootView`'s onboarding flow can write a freshly
+    /// Exposed so `StowerApplicationWindowContentView`'s onboarding flow can write a freshly
     /// created bookmark here after the user grants access via
     /// `StowerMessagesAccessPicker` — the engine itself never persists
     /// anything (JC2).
@@ -131,7 +132,8 @@ internal struct StowerMessagesComposition {
     /// effect on the very next load/refresh, not only after a relaunch (JC2).
     /// The provider reads that same closure on every reader use, so a RE-grant
     /// (a different folder picked later) invalidates its cached reader too —
-    /// nothing here has to notify the engine after `StowerRootView` writes a
+    /// nothing here has to notify the engine after `StowerApplicationWindowContentView`
+    /// writes a
     /// freshly granted bookmark.
     ///
     /// - Parameters:
@@ -175,7 +177,7 @@ internal struct StowerMessagesComposition {
     /// The `UserDefaults` key holding the security-scoped bookmark `Data` for
     /// the user's granted Messages folder.
     ///
-    /// `internal` (not `private`) so `StowerRootView`'s default constructs the
+    /// `internal` (not `private`) so `StowerApplicationWindowContentView`'s default constructs the
     /// exact same-keyed store without duplicating the literal.
     internal static let messagesAccessBookmarkKey = "messagesAccessBookmark"
 
