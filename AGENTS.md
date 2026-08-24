@@ -180,6 +180,23 @@ Do not add a new convention rule by hand — route it through `harden-guardrail`
 lands as a gate first, an `AGENTS.md` rule only when it can't be mechanized, and gets
 recorded in the catalog.
 
+## Agent skills
+
+### Issue tracker
+
+Issues live in this repo's GitHub Issues (`emily-kang-llc/stower-mas`), via the `gh` CLI. See
+`Docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles, each label string equal to its name; `wontfix` already exists in
+the repo, the other four need creating. See `Docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` at the repo root (hand-edited — agents read it, never write it),
+with `Docs/adr/` reserved for ADRs. See `Docs/agents/domain.md`.
+
 ### Codebase language alignment
 
 Global, not here: `~/.agents/skills/align-codebase-language` reads the personal map
