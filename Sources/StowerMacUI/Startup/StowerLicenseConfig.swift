@@ -1,3 +1,7 @@
+// WILL BE REMOVED, IGNORE — inactive Lemon Squeezy licensing/trial subsystem. The MAS
+// build wires no license gate, so nothing in this file is reachable at runtime. Removal
+// is a planned separate concern (Docs/BuildLog.md, 2026-08-24 entry).
+
 import StowerCore
 
 /// The app-side Lemon Squeezy identity, resolved once at launch.

@@ -1,3 +1,8 @@
+// WILL BE REMOVED (licensing/trial parts), IGNORE those — inactive Lemon Squeezy
+// subsystem; the MAS build wires no license gate. EXCEPTION: the diagnostics consent-card
+// scheduling in this file is live and must survive the licensing removal
+// (Docs/BuildLog.md, 2026-08-24 entry).
+
 import AppKit
 import SwiftUI
 
