@@ -179,3 +179,9 @@ commit.) Order matters — noticing comes before fixing:
 Do not add a new convention rule by hand — route it through `harden-guardrail` so it
 lands as a gate first, an `AGENTS.md` rule only when it can't be mechanized, and gets
 recorded in the catalog.
+
+### Codebase language alignment
+
+Global, not here: `~/.agents/skills/align-codebase-language` reads the personal map
+pointer in ignored `.agents/align-codebase-language.local.md`. Source and this repo's
+own docs win over that map; `CONTEXT.md` stays hand-edited.

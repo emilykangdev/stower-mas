@@ -7,7 +7,8 @@
   "copyGlobs": [
     ".env.keys",
     ".claude/settings.local.json",
-    ".humanlayer/workspace.local.json"
+    ".humanlayer/workspace.local.json",
+    ".agents/align-codebase-language.local.md"
   ],
   "repos": [
     {

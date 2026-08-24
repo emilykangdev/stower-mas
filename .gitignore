@@ -40,6 +40,10 @@ worktrees/
 # shared config, .humanlayer/workspace.json, IS committed.
 .humanlayer/workspace.local.json
 
+# Machine-specific personal language-map pointer for the global
+# align-codebase-language skill. Never commit a personal absolute path.
+.agents/align-codebase-language.local.md
+
 # Editor/IDE settings — local preferences only.
 .vscode/
 
