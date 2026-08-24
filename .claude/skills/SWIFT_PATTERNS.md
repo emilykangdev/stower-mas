@@ -234,6 +234,34 @@ Legend for **Sweep-able**:
 - **Sweep-able:** no — each guard asserts a different fact with a different tool; the fix
   is to author the correct family member by hand, never a mechanical replace.
 
+## 18. Reintroducing retired application/window/lifecycle vocabulary
+
+- **Bad:** using any pre-2026-08-23-rename declaration name, filename, or unambiguous
+  phrase from the application/window/lifecycle migration table — see
+  `tmp/plans/ready-plans/2026-08-23-align-application-language.md` for the exact
+  former→current list — anywhere in tracked active context after that rename.
+- **Why it spreads:** the retired vocabulary blurred the application definition,
+  scene description, the runtime Application Window, the construction boundary, and
+  cross-cutting drain/composition language; a single reintroduced instance (a stray
+  comment, a doc line, a resurrected old-path file) reads as precedent and teaches
+  the ambiguity right back to the next agent.
+- **Good:** the aligned target vocabulary — `ApplicationDefinition`,
+  `StowerApplicationWindowContentView`, `StowerTerminationDrain`,
+  `drainPendingWork()`, "Application Window" — per the migration table in
+  `tmp/plans/ready-plans/2026-08-23-align-application-language.md` and
+  `Docs/MacAppContract.md`.
+- **Caught by:** `gate` — `Scripts/precheck.sh` `6e` (four sub-checks: old-filename
+  absence via `test -e`, exact-symbol absence via `git grep`, scoped lowercase
+  `appDelegate` absence, and unambiguous-phrase absence). Per JC4 in the rename
+  plan, `6e` deliberately does not ban the broad semantic tokens `root`, `flush`,
+  `screen`, `construct`, or `in flight` standalone — only exact retired symbols,
+  filenames, and unambiguous multi-word phrases; any other match is
+  review-classified, not machine-gated.
+- **Sweep-able:** no — a reintroduced instance needs the aligned replacement judged
+  per site (there is no single mechanical substitution that is always correct for
+  every remaining broad token), so `swift-pattern-sweep` does not apply; `6e`
+  prevents new instances and a human fixes any surviving occurrence by hand.
+
 ## How to add an entry
 
 Append a numbered section in the same shape: **Bad / Why it spreads / Good / Caught

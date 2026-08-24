@@ -118,4 +118,82 @@ if grep -RInE --include="*.swift" \
     exit 1
 fi
 
+# 6e — No stale pre-rename Stower application/window/lifecycle vocabulary remains
+# (2026-08-23 migration to ApplicationDefinition / StowerApplicationWindowContentView
+# / StowerTerminationDrain; the retired declaration/filename literals are named only
+# inside the split fragments below, never spelled out contiguously in a comment).
+# WHY: this vocabulary blurred the application definition, scene description, the
+# runtime Application Window, the construction boundary, and cross-cutting
+# drain/composition language; letting it back in re-teaches the ambiguity the
+# rename removed. Exact stale literals below are split across adjacent quoted
+# fragments so this guard's own source is not itself a false hit when the exact
+# literal is searched for repo-wide.
+
+# 6e-1 — old pre-rename filenames must be gone.
+STALE_OLD_FILES=(
+    "StowerMac/StowerMacMAS/StowerMac""MASApp.swift"
+    "Sources/StowerMacUI/Views/Stower""RootView.swift"
+    "Sources/StowerMacUI/Views/Stower""RootViewLicensing.swift"
+    "Sources/StowerMacUI/Views/StowerTermination""Flusher.swift"
+)
+for STALE_FILE in "${STALE_OLD_FILES[@]}"; do
+    if [ -e "$STALE_FILE" ]; then
+        echo "ERROR: stale pre-rename file present: $STALE_FILE" >&2
+        echo "       It was replaced by StowerApplication.swift /" >&2
+        echo "       StowerApplicationWindowContentView(Licensing).swift / StowerTerminationDrain.swift." >&2
+        echo "       Delete it and migrate any remaining content into the renamed file." >&2
+        exit 1
+    fi
+done
+
+# 6e-2 — exact stale declaration/reference symbols must be absent repo-wide
+# (excluding *.html, the sole permitted historical-record surface per JC1).
+STALE_SYMBOL_PARTS=(
+    "StowerMac""MASApp"
+    "StowerMac""App(\\.swift)?"
+    "StowerApp""Delegate"
+    "StowerMacMAS""Container"
+    "Stower""RootContainer"
+    "Stower""RootView"
+    "StowerTermination""Flusher"
+    "on""Flush"
+    "flush""PendingWork"
+    "flush""All"
+    "Stower""Draft""WriteHandle"
+)
+STALE_SYMBOLS="$(IFS='|'; echo "${STALE_SYMBOL_PARTS[*]}")"
+if git grep -n -E "$STALE_SYMBOLS" -- ':!*.html' 2>/dev/null; then
+    echo "ERROR: stale pre-rename declaration/reference symbol found above." >&2
+    echo "       Migrate it to the aligned target name; no compatibility alias is allowed." >&2
+    exit 1
+fi
+
+# 6e-3 — lowercase 'appDelegate' property reference must be gone from the MAS
+# app entry (renamed to 'applicationLifecycleDelegate').
+STALE_LOWER_APP_DELEGATE="app""Delegate"
+if git grep -n "$STALE_LOWER_APP_DELEGATE" -- StowerMac/StowerMacMAS 2>/dev/null; then
+    echo "ERROR: stale 'appDelegate' property reference found above in StowerMac/StowerMacMAS." >&2
+    echo "       Rename it to 'applicationLifecycleDelegate'." >&2
+    exit 1
+fi
+
+# 6e-4 — unambiguous stale multi-word phrases must be absent from tracked active
+# context. Character classes replace literal spaces so this guard's own source
+# text never spells the banned phrase contiguously.
+STALE_PHRASES='composition[[:space:]]root'
+STALE_PHRASES="$STALE_PHRASES|composition[[:space:]]point"
+STALE_PHRASES="$STALE_PHRASES|termination[[:space:]]flush"
+STALE_PHRASES="$STALE_PHRASES|flush[[:space:]]on[[:space:]]quit"
+STALE_PHRASES="$STALE_PHRASES|save[[:space:]]on[[:space:]]quit"
+STALE_PHRASES="$STALE_PHRASES|main[[:space:]]window"
+STALE_PHRASES="$STALE_PHRASES|board[[:space:]]window"
+STALE_PHRASES="$STALE_PHRASES|top-level[[:space:]]declaration"
+if git grep -n -i -E "$STALE_PHRASES" -- \
+    .github AGENTS.md ARCHITECTURE.md Docs Sources Tests StowerMac Scripts 2>/dev/null; then
+    echo "ERROR: stale application/window/lifecycle phrase found above." >&2
+    echo "       Rewrite it using the exact aligned relationship (see AGENTS.md" >&2
+    echo "       'Naming map' and Docs/MacAppContract.md) instead of the retired phrase." >&2
+    exit 1
+fi
+
 echo "All checks passed."
