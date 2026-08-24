@@ -1,6 +1,6 @@
 import Foundation
 
-/// The board's three top-level tabs.
+/// The board's three primary tabs.
 ///
 /// The first two are lenses over the already-loaded `StowerBoardModel` and map 1:1
 /// to `StowerBoardDirection` (selecting one re-lenses without reloading — I7); the

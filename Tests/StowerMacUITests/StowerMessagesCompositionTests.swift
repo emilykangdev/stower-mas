@@ -2,7 +2,7 @@ import Testing
 
 @testable import StowerMacUI
 
-/// The composition root's cross-store folder consistency invariant (I9).
+/// The cross-store folder consistency invariant `StowerMessagesComposition` guarantees (I9).
 ///
 /// Exercised via the pure `resolvedURLs(forFolder:)` seam so this file's first ever
 /// test never opens a real store or touches the ambient `StowerDebug/` folder a live

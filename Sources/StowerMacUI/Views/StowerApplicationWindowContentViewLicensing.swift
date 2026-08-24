@@ -46,7 +46,7 @@ extension StowerApplicationWindowContentView {
     /// rerun, and that rerun can legitimately stop short of the board
     /// (messages-access onboarding, `StowerModelUnavailableView`). The user still paid and
     /// activated, so F1 must fire on every success path — the alert is attached
-    /// at `StowerApplicationWindowContentView.body`'s root, so it presents over
+    /// to `StowerApplicationWindowContentView.body` itself, so it presents over
     /// whichever screen the rerun lands on.
     ///
     /// Refreshes `trialBadge` explicitly here rather than relying on the board's

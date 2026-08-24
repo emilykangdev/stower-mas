@@ -127,7 +127,7 @@ internal protocol StowerLicenseGating: Sendable {
   error carried by `StowerStartupState.needsLicense(StowerLicenseGateError?)`
 - Production conformer: **`StowerLemonSqueezyLicenseGate`**
   (`Sources/StowerMacUI/Startup/StowerLemonSqueezyLicenseGate.swift`), wired
-  at `StowerRootView.swift:121` (`StowerLemonSqueezyLicenseGate()`)
+  at `StowerApplicationWindowContentView.swift:140` (`StowerLemonSqueezyLicenseGate()`)
 - Consumed by: `StowerStartupModel` (calls `licenseState(now:)` on every
   startup run and on `refreshLicenseIfOnBoard()`; calls `activate(key:)` +
   `persist(key:instanceID:)` from `activate(key:)`, under a generation guard
@@ -294,9 +294,9 @@ exist anywhere in this codebase.
   its copy says so ("Stower connects once to verify your purchase, then
   works entirely offline").
 
-**Root view wiring** — `Sources/StowerMacUI/Views/StowerRootView.swift`
+**Content-view wiring** — `Sources/StowerMacUI/Views/StowerApplicationWindowContentView.swift`
 
-- Constructs `StowerLemonSqueezyLicenseGate()` (line 121).
+- Constructs `StowerLemonSqueezyLicenseGate()` (line 140).
 - `openCheckout()` opens `StowerLicenseConfig.resolved.checkoutURL` via
   `NSWorkspace.shared.open` and sets a `boughtThisSession` flag (drives the F2
   banner state below).
@@ -529,4 +529,4 @@ trial → paywall → activate lifecycle.
 | Version | Date | Change |
 |---------|------|--------|
 | 1.0–1.21 | 2026-06-24 – 2026-07-01 | **Historical — describes the deleted Keygen/Supabase backend.** Documented the Keygen Account→Product→Policy→License→Machine model, the Supabase Edge Function (`supabase/functions/license/`) as the licensing brain (`/mint-trial`, `/check-in`, `/ls-webhook`, `/health`), the once-per-major +7-day trial extension, machine-file/entitlement/offline-authority mechanics, the JC5 request-signature scheme, and the full gap/invariant tracking (G1–G13, I1–I19) for that system. None of this is live; kept only for archaeology. See the pre-2.0 revision of this file in git history for the full text. |
-| 2.0 | 2026-07-01 | **Full rewrite — Keygen/Supabase backend deleted, replaced by client-only Lemon Squeezy activate-once + local 7-day trial.** Removed: the Keygen model primer, the Edge Function seam contracts, machine-file/entitlement/policy sections, mint/check-in/webhook flows, offline-authority/lease-store material, and the old §9 test-coverage map — none of that code exists anymore. Added: the as-built seam (`StowerLicenseGating`/`StowerLemonSqueezyClient`/`StowerLicenseStore`/`StowerTrialClock`/`StowerLemonSqueezyLicenseGate`/`StowerLicenseConfig`/`StowerLicenseDebugArguments`), the new invariants I1–I7, the storage/threat model (§4), the business-model note flagging the 30-day-trial/per-major-entitlement claims in `licensing.md` as not (yet) matched by code, and a fresh Open Questions table (G1–G4) for the pending Lemon Squeezy store/product/checkout-URL release gate. Grounded in `StowerLemonSqueezyClient.swift`, `StowerLicenseStore.swift`, `StowerLicenseActivation.swift`, `StowerTrialClock.swift`, `StowerLicenseGating.swift`, `StowerLemonSqueezyLicenseGate.swift`, `StowerLicenseConfig.swift`, `StowerLicenseDebugArguments.swift`, `StowerLicenseDebugArguments.swift`, `StowerStartupModel.swift`, `StowerStartupState.swift`, `StowerLicenseEntryView.swift`, `StowerRootView.swift`, `StowerBoardBannerState.swift`, `StowerBoardViewTriage.swift`, `StowerAnalyticsEvent.swift`, and `Scripts/precheck.sh`'s `6o` guard. |
+| 2.0 | 2026-07-01 | **Full rewrite — Keygen/Supabase backend deleted, replaced by client-only Lemon Squeezy activate-once + local 7-day trial.** Removed: the Keygen model primer, the Edge Function seam contracts, machine-file/entitlement/policy sections, mint/check-in/webhook flows, offline-authority/lease-store material, and the old §9 test-coverage map — none of that code exists anymore. Added: the as-built seam (`StowerLicenseGating`/`StowerLemonSqueezyClient`/`StowerLicenseStore`/`StowerTrialClock`/`StowerLemonSqueezyLicenseGate`/`StowerLicenseConfig`/`StowerLicenseDebugArguments`), the new invariants I1–I7, the storage/threat model (§4), the business-model note flagging the 30-day-trial/per-major-entitlement claims in `licensing.md` as not (yet) matched by code, and a fresh Open Questions table (G1–G4) for the pending Lemon Squeezy store/product/checkout-URL release gate. Grounded in `StowerLemonSqueezyClient.swift`, `StowerLicenseStore.swift`, `StowerLicenseActivation.swift`, `StowerTrialClock.swift`, `StowerLicenseGating.swift`, `StowerLemonSqueezyLicenseGate.swift`, `StowerLicenseConfig.swift`, `StowerLicenseDebugArguments.swift`, `StowerLicenseDebugArguments.swift`, `StowerStartupModel.swift`, `StowerStartupState.swift`, `StowerLicenseEntryView.swift`, `StowerApplicationWindowContentView.swift`, `StowerBoardBannerState.swift`, `StowerBoardViewTriage.swift`, `StowerAnalyticsEvent.swift`, and `Scripts/precheck.sh`'s `6o` guard. |

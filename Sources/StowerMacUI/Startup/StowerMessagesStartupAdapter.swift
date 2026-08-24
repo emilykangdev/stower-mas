@@ -18,9 +18,9 @@ internal struct StowerMessagesStartupAdapter: StowerStartupProviding {
     /// real provider.
     ///
     /// The adapter-mapping tests pass `StowerFakeMessagesEngine`; production always
-    /// passes the composition root's shared `StowerDebtBoardProvider` so
+    /// passes `StowerMessagesComposition`'s shared `StowerDebtBoardProvider` so
     /// `StowerMessagesComposition` can share one provider across both adapters —
-    /// never a bare `StowerDebtBoardProvider()`, since only the composition root
+    /// never a bare `StowerDebtBoardProvider()`, since only `StowerMessagesComposition`
     /// knows the build-variant/demo-mode storage location a fresh provider must use.
     internal init(engine: any StowerDebtBoardProviding) {
         self.engine = engine

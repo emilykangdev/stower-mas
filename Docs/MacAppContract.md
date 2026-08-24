@@ -406,13 +406,13 @@ same shape — never let a view model import `StowerMessages`.
 
 ---
 
-## 10. App scenes & lifecycle hooks (`StowerMacApp`)
+## 10. App scenes & lifecycle hooks (`ApplicationDefinition`)
 
-`StowerMacApp` declares **two scenes**:
+`ApplicationDefinition` declares **two scenes**, each a private computed `some Scene`:
 
-- `WindowGroup { StowerRootContainer(...) }` — the main window; `.commands` (the
-  ⌘Z / ⌘⇧Z undo bridge) stays on this scene.
-- `Settings { StowerSettingsView() }` — the standard macOS Preferences scene.
+- `applicationWindowScene`: `WindowGroup { ApplicationWindowContentConstructionView(...) }` —
+  the Application Window; `.commands` (the ⌘Z / ⌘⇧Z undo bridge) stays on this scene.
+- `settingsScene`: `Settings { StowerSettingsView() }` — the standard macOS Preferences scene.
   `StowerSettingsView` is a `TabView` whose only pane today is
   `StowerPrivacySettingsView` (analytics consent toggle).
 
@@ -420,7 +420,7 @@ same shape — never let a view model import `StowerMessages`.
 diagnostics subsystem — see [Analytics.md](Analytics.md) and
 [CrashReporting.md](CrashReporting.md) for the full rationale):
 
-- `StowerMacApp.init` → `StowerDiagnostics.initialize()` then
+- `ApplicationDefinition.init` → `StowerDiagnostics.initialize()` then
   `StowerAnalytics.reportAppLaunched()`. On the MAS target, `initialize()` starts
   only the analytics backend (consent-gated, no-op reporter — no TelemetryDeck SDK
   is available). Crash reporting (Sentry) is absent.
@@ -428,9 +428,9 @@ diagnostics subsystem — see [Analytics.md](Analytics.md) and
   The public `StowerDiagnostics.initialize()` signature is the same as the non-MAS
   target, but internally Sentry crash reporting is never started — see
   `Docs/CrashReporting.md` for the rationale.
-- `StowerAppDelegate.applicationShouldTerminate` → `StowerAnalytics.reportSessionEnded()`
-  **synchronously**, BEFORE draining draft writes. The quit path never `await`s
-  analytics; the no-op reporter drops the event instantly.
+- `ApplicationLifecycleDelegate.applicationShouldTerminate` → `StowerAnalytics.reportSessionEnded()`
+  **synchronously**, BEFORE draining draft writes via `StowerTerminationDrain.drainPendingWork()`.
+  The quit path never `await`s analytics; the no-op reporter drops the event instantly.
 
 The analytics subsystem (`Sources/StowerMacUI/Analytics/`) is **app-internal**, not
 engine-backed — it sits above the §9 adapter wall and imports no engine module.

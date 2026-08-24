@@ -49,7 +49,7 @@ jobs:
         run: ./Scripts/precheck.sh
       # Build the StowerMac Xcode app target (no signing) so that Xcode-project-
       # only code — StowerUpdaterController.swift, StowerUpdaterSettingsView.swift,
-      # Sparkle SPM linkage, and StowerMacApp.swift wiring — is compiled on every
+      # Sparkle SPM linkage, and StowerApplication.swift wiring — is compiled on every
       # push/PR. precheck.sh runs `swift build` over the SPM graph (Sources/,
       # Tests/) but never touches StowerMac/StowerMac.xcodeproj; without this step
       # a broken Sparkle API call would only surface at `xcodebuild archive` time

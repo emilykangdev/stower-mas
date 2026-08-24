@@ -3,7 +3,7 @@ import Foundation
 import Observation
 
 /// Drives the messages-access-first startup flow and owns the single
-/// `StowerStartupState` the root view renders.
+/// `StowerStartupState` `StowerApplicationWindowContentView` renders.
 ///
 /// `start()` runs the flow once; `checkAgain()` reruns it. The flow is re-entrant:
 /// each run cancels the one in flight, takes a fresh generation token, and any
@@ -14,7 +14,7 @@ import Observation
 @MainActor
 @Observable
 internal final class StowerStartupModel {
-    /// The state the root view switches on.
+    /// The state `StowerApplicationWindowContentView` switches on.
     internal private(set) var state: StowerStartupState = .checkingModel
 
     private let provider: any StowerStartupProviding
@@ -136,7 +136,7 @@ internal final class StowerStartupModel {
     }
 
     /// Cancels any in-flight run so startup work (the real provider's database
-    /// read) doesn't outlive the view — called when the root view disappears.
+    /// read) doesn't outlive the view — called when `StowerApplicationWindowContentView` disappears.
     ///
     /// A bumped generation makes any late completion a no-op; `start()` later
     /// begins a fresh run.

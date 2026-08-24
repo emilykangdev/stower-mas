@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Settings scene root, housing all app preferences.
+/// The Settings scene's content view, housing all app preferences.
 ///
 /// Presented via the single `Settings { }` scene in `ApplicationDefinition`. Houses the
 /// Privacy pane (analytics consent) plus any `additionalPanes` the app target

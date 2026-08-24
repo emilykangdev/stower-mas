@@ -122,7 +122,7 @@ Legend for **Sweep-able**:
 
 ## 10. Public name without `Stower` prefix
 
-- **Bad:** `public struct SearchResult` at top level in a `Stower*` module.
+- **Bad:** `public struct SearchResult` at file scope in a `Stower*` module.
 - **Why it spreads:** breaks the swift-nio-style namespace convention; collisions and
   ambiguity follow.
 - **Good:** `public struct StowerSearchResult`, or nest the type inside a `Stower*`

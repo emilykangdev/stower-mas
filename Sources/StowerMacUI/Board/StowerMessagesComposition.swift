@@ -2,7 +2,7 @@ import Foundation
 import StowerCore
 import StowerMessages
 
-/// The production composition point: builds ONE engine provider and vends both
+/// The production Messages composition: builds ONE engine provider and vends both
 /// app-owned boundaries over it.
 ///
 /// One of the four files in `StowerMacUI` that import the engine. Constructing a
@@ -10,8 +10,8 @@ import StowerMessages
 /// startup adapter and the board adapter is load-bearing: the snapshot reader, the
 /// disposable verdict cache, and `refreshJudgments`' single-flight coalescing are
 /// all provider state, so two providers would split them and each re-copy the
-/// Messages database. `StowerApplicationWindowContentView` builds this once and
-/// holds both boundaries.
+/// Messages database. `StowerApplicationWindowContentView` builds this and holds
+/// both boundaries.
 internal struct StowerMessagesComposition {
     /// The startup boundary the `StowerStartupModel` drives.
     internal let startup: any StowerStartupProviding
@@ -128,8 +128,8 @@ internal struct StowerMessagesComposition {
     ///
     /// The production branch never captures a fixed bookmark `Data`: it passes a
     /// `loadMessagesAccessBookmark` closure that re-reads `StowerUserDefaultsItem`
-    /// on every call, so a bookmark granted after this composition root ran takes
-    /// effect on the very next load/refresh, not only after a relaunch (JC2).
+    /// on every call, so a bookmark granted after `StowerMessagesComposition.init`
+    /// ran takes effect on the very next load/refresh, not only after a relaunch (JC2).
     /// The provider reads that same closure on every reader use, so a RE-grant
     /// (a different folder picked later) invalidates its cached reader too —
     /// nothing here has to notify the engine after `StowerApplicationWindowContentView`
@@ -140,10 +140,10 @@ internal struct StowerMessagesComposition {
     ///   - folderName: The build-variant Application Support subfolder the
     ///     provider's verdict cache lives under, passed explicitly (never the
     ///     default parameter — the default resolves the SAME variant folder
-    ///     today, but relying on it here would silently stop tracking the
-    ///     composition root's own folder name if the two ever diverge, e.g.
-    ///     once demo mode gets its own folder).
-    ///   - bookmarkStore: The composition root's single bookmark-storage
+    ///     today, but relying on it here would silently stop tracking
+    ///     `StowerMessagesComposition`'s own folder name if the two ever diverge,
+    ///     e.g. once demo mode gets its own folder).
+    ///   - bookmarkStore: `StowerMessagesComposition`'s single bookmark-storage
     ///     instance, reused here rather than constructed a second time.
     /// - Returns: The shared provider and, in demo mode only, the fake-contacts
     ///   resolver factory (`nil` outside demo mode and always in Release).
@@ -205,8 +205,8 @@ internal struct StowerMessagesComposition {
     /// can assert all 4 stores share one folder name WITHOUT calling `init()` (which
     /// opens real database connections against the REAL ambient `StowerDebug/` folder a
     /// live app instance may be using concurrently — exactly the collision this
-    /// file's storage-location isolation closes elsewhere; a naive composition-root
-    /// test would silently reintroduce it). The named tuple mirrors `init()`'s own
+    /// file's storage-location isolation closes elsewhere; a naive
+    /// `StowerMessagesComposition` test would silently reintroduce it). The named tuple mirrors `init()`'s own
     /// four stores, with no single-use result type only a test would construct.
     // swiftlint:disable:next large_tuple
     internal static func resolvedURLs(forFolder folderName: String) -> (

@@ -98,7 +98,7 @@ internal struct StowerContactsAccess: Sendable {
     /// A denied no-op access for previews and tests, so they never prompt.
     ///
     /// The board stays on handles. Keeps `CNAuthorizationStatus` out of the view
-    /// layer: the VM and root view reference this instead of a `Contacts` enum literal.
+    /// layer: the VM and `StowerApplicationWindowContentView` reference this instead of a `Contacts` enum literal.
     internal static let denied = StowerContactsAccess(status: { .denied }, request: { false })
 
     /// The current authorization, collapsed into the app-owned three-state.

@@ -47,7 +47,7 @@ internal struct StowerBoardView: View {
 
     /// The feedback sheet's state + send logic.
     ///
-    /// Constructed once in `StowerApplicationWindowContentView` and injected so
+    /// Retained as `@State` in `StowerApplicationWindowContentView` and injected so
     /// an in-progress
     /// message survives a re-render (JC2). The `Feedback` toolbar button presents
     /// the `.sheet`.
@@ -252,8 +252,8 @@ internal struct StowerBoardView: View {
     /// reserves its own space above the Contacts banner and tab picker rather than
     /// floating over (and intercepting) them.
     ///
-    /// Renders whichever `StowerBoardBannerState` the root computed this render
-    /// (trial badge / F3 buy-nudge / F2 enter-key / none) — never more than one.
+    /// Renders whichever `StowerBoardBannerState` `StowerApplicationWindowContentView`
+    /// computed this render (trial badge / F3 buy-nudge / F2 enter-key / none) — never more than one.
     internal var trialBadgeOverlay: some View {
         StowerBoardBannerView(
             state: bannerState,

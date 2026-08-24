@@ -18,19 +18,25 @@ anti-corruption boundary that maps engine types to app-owned `StowerStartup*` /
 `StowerDebtBoardProvider` and injects it into both the startup adapter and the
 board adapter, so the reader, verdict cache, and refresh coalescing are shared.
 
+The **Application Window** is the runtime `NSWindow` realized from
+`ApplicationDefinition.applicationWindowScene`'s `WindowGroup`; the term names the
+window's product role, not a single-instance cardinality guarantee. Its changing
+content is `StowerApplicationWindowContentView`, which selects one `currentScreen`
+per `StowerStartupState`.
+
 ### Call graph — who calls whom on startup
 
 ```mermaid
 flowchart TB
-    subgraph app["StowerMac (app target) · StowerMacApp.swift"]
-        main["@main StowerMacApp\nWindowGroup { StowerRootView() }"]
+    subgraph app["StowerMac (app target) · StowerMacMAS/StowerApplication.swift"]
+        main["@main ApplicationDefinition\napplicationWindowScene → WindowGroup { ApplicationWindowContentConstructionView }"]
     end
 
-    subgraph views["StowerMacUI · Views/StowerRootView.swift"]
-        rootInit["StowerRootView.init()\nbuilds StowerMessagesComposition + StowerStartupModel + StowerBoardViewModel"]
-        body["body → screen\nswitch model.state → child view"]
-        task[".task { model.start() }"]
-        disappear[".onDisappear { model.cancel() }"]
+    subgraph views["StowerMacUI · Views/StowerApplicationWindowContentView.swift"]
+        contentInit["StowerApplicationWindowContentView.init()\nbuilds StowerMessagesComposition + StowerStartupModel + StowerBoardViewModel"]
+        body["body → currentScreen\nswitch startupModel.state → child view"]
+        task[".task { startupModel.start() }"]
+        disappear[".onDisappear { startupModel.cancel() }"]
     end
 
     subgraph model["StowerMacUI · Startup/StowerStartupModel.swift  (@MainActor @Observable)"]
@@ -66,7 +72,7 @@ flowchart TB
         cache[("StowerReplyVerdictCache\nreply-verdicts.sqlite")]
     end
 
-    main --> rootInit --> body
+    main --> contentInit --> body
     body --> task --> start
     body -.-> disappear
     start --> begin --> run
@@ -122,7 +128,7 @@ stateDiagram-v2
     needsMessagesAccessStillMissing --> checkingModel : Check Again
     failed --> checkingModel : Retry
 
-    connectedPreparingBoard --> board : StowerRootView renders StowerBoardView
+    connectedPreparingBoard --> board : StowerApplicationWindowContentView renders StowerBoardView
 
     note right of board
       Board lifecycle lives in the child StowerBoardViewModel,
@@ -155,10 +161,10 @@ and `commit` writes `state` only if the completing run is still the current
 generation — so an overlapping Check Again can never let a stale load overwrite a
 newer run, and a `CancellationError` (superseded run, or `onDisappear → cancel()`)
 routes to nothing, never to `.failed`. The view re-renders because
-`StowerStartupModel` is `@Observable` and `body` reads `model.state`.
+`StowerStartupModel` is `@Observable` and `body` reads `startupModel.state`.
 
 **How it "keeps running":** the startup flow is a one-shot that hands off at
-`connectedPreparingBoard`, where `StowerRootView` renders `StowerBoardView` backed
+`connectedPreparingBoard`, where `StowerApplicationWindowContentView` renders `StowerBoardView` backed
 by a child `StowerBoardViewModel`. `StowerStartupState` still has no board-era
 cases — the board's richer lifecycle (preparing → rows / caught-up / error, plus
 the background `refreshJudgments` loop that backfills verdicts and drives the

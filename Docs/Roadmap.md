@@ -19,7 +19,7 @@ gone, `PLAN.md` now owns only the dated build log.
 - Repo: `stower`. Domain: `stower.app`.
 - Swift modules: `StowerCore`, `StowerPhotos`, `StowerMessages`.
 - App targets: `StowerMac` (v1), `StowerPhotosIOS` (v3 — not scaffolded yet).
-- All public top-level declarations prefix `Stower` (swift-nio convention).
+- All public file-scope declarations prefix `Stower` (swift-nio convention).
 
 ## Module boundaries
 

@@ -11,7 +11,7 @@ import StowerMessages
 /// engine→`StowerStartupFailure` error map.
 ///
 /// Engine types are referenced by their **bare** names (`StowerDebtConfig`, not
-/// `StowerMessages.StowerDebtConfig`): the module also exports a top-level
+/// `StowerMessages.StowerDebtConfig`): the module also exports a file-scope
 /// `enum StowerMessages`, so qualifying would read as a nested-type lookup and fail
 /// to compile. The app-owned types keep distinct `Stower*` names, so there is no
 /// collision.

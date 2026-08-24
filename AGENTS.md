@@ -120,7 +120,7 @@ code:
 
 ## Conventions
 
-- All public top-level declarations in a `Stower*` module must begin with
+- All public file-scope declarations in a `Stower*` module must begin with
   `Stower`, or be nested inside a type that does. Underscore-prefixed names
   are treated as internal API even if `public`.
 - Tests go in `Tests/<ModuleName>Tests/`. One file per type under test.

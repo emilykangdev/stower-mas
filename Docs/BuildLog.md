@@ -5,11 +5,43 @@ The dated, engineer-facing build log for `StowerMac` — relocated verbatim from
 migration plan). This is the log an agent or contributor reads to re-enter a
 session without re-reading the diff (see
 `AGENTS.md`'s "after each meaningful commit" rule, which now points here).
-Entries are period-accurate history — never rewritten to describe a naming
-scheme or architecture that didn't exist yet at the time.
+Entries describe dated history, but current-checkout terminology is kept aligned:
+a cross-cutting rename sweep rewrites this file's symbol names and vocabulary to
+match the current source, the same as any other tracked doc (JC1 of the
+2026-08-23 language-alignment plan). Git history preserves the wording that was
+accurate at the time.
 
 ## Status
 
+- 2026-08-23: **Application/window/lifecycle language alignment
+  (`add-window-menu-to-reopen-main-application-window` branch, plan
+  `tmp/plans/ready-plans/2026-08-23-align-application-language.md`).**
+  Renamed the MAS `@main` application source and its `App`/delegate/construction
+  declarations to `StowerApplication.swift` / `ApplicationDefinition` /
+  `ApplicationLifecycleDelegate` / `ApplicationWindowContentConstructionView`; the
+  public content view and its licensing extension to
+  `StowerApplicationWindowContentView.swift`(+`Licensing`); the lifecycle-wire type
+  and file to `StowerTerminationDrain.swift`; its registration/await methods to
+  `registerDrain(_:)` and `drainPendingWork()`; the board view-model's pending-work
+  method to `drainPendingWork()`; the construction-result state, startup-model
+  property, and current-Screen property to `applicationWindowContentResult`,
+  `startupModel`, and `currentScreen`; and the internal draft-write handle to
+  `DraftWriteTaskHandle` — no runtime behavior, `WindowGroup` shape, construction
+  frequency, or drain/enqueue ordering changed; prior symbol names remain in Git
+  history. `applicationWindowScene` and `settingsScene` are now exact, greppable
+  computed `Scene` properties. Added `StowerTerminationDrainTests.swift` (five
+  contract cases: no-op, registration, replacement, invocation, awaiting). Followed
+  by a full-tracked-tree semantic sweep (classified per the plan's application/
+  window/lifecycle/composition/pending-work/Screen search families; ledger in
+  `.humanlayer/tasks/add-window-menu-to-reopen-main-application-window/align-language-plan.md`)
+  that rewrote remaining stale-symbol prose to the current declarations above,
+  removed unverified "constructed once" claims, and named the exact
+  `StowerMessagesComposition` type/initializer in place of an abstract collaborator-
+  wiring phrase — while retaining filesystem `rootURL`/`resolvedRoot`,
+  `StowerTranscript.flush()`, the analytics SDK's own flush comment, `inflightWrites`/
+  `inflightAtReadStart`, and literal on-screen/spatial language as explicit
+  exceptions. `Scripts/precheck.sh` passes; it still has no `6e` static guard for
+  this rename (deferred to a later task in the same plan).
 - 2026-07-30: **`StowerDebtBoardProvider` no longer serves a stale reader across a
   bookmark re-grant (issue #18, branch
   `fix-stowerdebtboardprovider-reader-cache-invalidation`).**
@@ -33,7 +65,7 @@ scheme or architecture that didn't exist yet at the time.
   comparison means a re-minted bookmark for the SAME folder
   (`onBookmarkRefreshed`) also re-opens — one extra snapshot copy, never a missed
   one; erring toward rebuilding is the only safe polarity. No protocol, adapter,
-  or `StowerRootView` wiring changed, so the `6b` four-file engine-import
+  or `StowerApplicationWindowContentView` wiring changed, so the `6b` four-file engine-import
   allowlist is untouched. New `StowerDebtBoardReaderCacheTests` (7 tests): two
   re-grant tests were confirmed RED against the pre-fix `sharedReader()`; three
   reuse tests pin the perf invariant so the fix can't degrade into opening a
@@ -107,7 +139,7 @@ scheme or architecture that didn't exist yet at the time.
   Debug vs. Release, replacing four stores' (`StowerDraftStore`, `StowerTriageStore`,
   `StowerInteractionEventStore`, `StowerDebtBoardProvider`) copy-pasted `"Stower"` literal
   with an `inFolder:`-parameterized entry point that validates the folder name (I11). The
-  app's composition root resolves `StowerEnvironment.current.applicationSupportDirectoryName`
+  `StowerMessagesComposition.init` resolves `StowerEnvironment.current.applicationSupportDirectoryName`
   once and passes it explicitly, so a Debug build's local data now lives under
   `Application Support/StowerDebug/` instead of silently sharing Release's
   `Application Support/Stower/` folder. `StowerMessagesStorageLocation` (`StowerMacUI`)
@@ -166,7 +198,7 @@ scheme or architecture that didn't exist yet at the time.
   composer, and `activeDraftPreview` inline preview) — `all()` returns every row; the view model excludes
   `resolvedAt != nil`. `mergeDrafts` I10 guard keeps a local resolve/undo from being reverted by a stale reload
   while that key's write is in flight (both directions). Writes serialize per-key through `enqueueDraftWrite`
-  (I11); `flushAll` drains them on quit. Codex loop: 3 iterations, 6 P2 fixed. Docs synced: `Docs/DataModel.md`
+  (I11); `drainPendingWork()` drains them on quit. Codex loop: 3 iterations, 6 P2 fixed. Docs synced: `Docs/DataModel.md`
   (schema + resolution semantics). New tests: `StowerBoardViewModelDraftResolveTests`,
   `StowerBoardViewModelDraftUndoTests`, plus `StowerDraftStore`/schema resolve coverage.
 - 2026-07-01: **Licensing is client-only Lemon Squeezy activate-once + local 7-day trial (branch `v0-prep`, PR #41).**
@@ -178,7 +210,7 @@ scheme or architecture that didn't exist yet at the time.
   seeded from a `UserDefaults` first-launch date; `StowerTrialClock.trialDuration`). Activate once →
   licensed forever offline: no re-validation, no revocation (contract I6). Money moments:
   F1 "You're all set." alert on every successful activation path, F2 enter-key banner after checkout
-  (`StowerRootView.openCheckout()` sets `boughtThisSession`), F3 buy-nudge via `StowerBoardBannerState`;
+  (`StowerApplicationWindowContentView.openCheckout()` sets `boughtThisSession`), F3 buy-nudge via `StowerBoardBannerState`;
   key entry is `StowerLicenseEntryView` (paste-forgiving `normalize()`). Trial funnel analytics:
   `trial_started` / `paywall_reached` / `checkout_opened` / `activated`. Precheck `6o` pins licensing
   egress to `api.lemonsqueezy.com` and bans any residual server-backed licensing token from `Sources/`.
@@ -203,7 +235,7 @@ scheme or architecture that didn't exist yet at the time.
   memory even if the Keychain write failed. **Default-on with disclosure**: the `StowerAnalyticsConsentCard`
   appears once after ~60s of foreground board time (JC7), and a Privacy pane (`StowerSettingsView` →
   `StowerPrivacySettingsView`) in a new `Settings { }` scene gives one-click off. Consent is license-scoped
-  ("off wins", reconciled against `diagnostics_opt_out` on check-in, JC8). `StowerMacApp` calls
+  ("off wins", reconciled against `diagnostics_opt_out` on check-in, JC8). `ApplicationDefinition` calls
   `StowerAnalytics.initialize()` + `reportAppLaunched()` in `init`, and `reportSessionEnded()` in
   `applicationShouldTerminate` (synchronous, no `await`). `StowerStartupModel.commit` emits the startup
   funnel (`hardware_checked`, `license_gate_reached`, `fda_permission_requested`, `fda_permission_resolved`
@@ -243,7 +275,7 @@ scheme or architecture that didn't exist yet at the time.
   `StowerLiveBoardDataSource`, and `StowerMessagesComposition` (ONE `StowerDebtBoardProvider` injected
   into both adapters). Views: `StowerBoardView` (toggle + day filter + manual refresh + preparing /
   rows / caught-up / error), `StowerNoReplyRowView`, `StowerThreadView` (bubbles + Open in Messages).
-  `StowerRootView` renders the board at `.connectedPreparingBoard` via a `@State` board VM whose
+  `StowerApplicationWindowContentView` renders the board at `.connectedPreparingBoard` via a `@State` board VM whose
   `onFailure` calls the new `StowerStartupModel.handleBoardFailure` — `StowerStartupState` gains NO
   board cases. One permitted engine change: doc-comment sweep pinning `recentMessages` "newest
   `limit`, oldest-first" across the three sibling comments + the `StowerConversationFactsReading`
@@ -261,14 +293,14 @@ scheme or architecture that didn't exist yet at the time.
   `@MainActor @Observable StowerStartupModel` with Task+generation re-entrancy (cancel-before-replace;
   `CancellationError` never routes to `.failed`). Only `StowerMessagesStartupAdapter` imports
   `StowerMessages`, mapping the seven-case `StowerMessagesError` + availability + config 1:1. FDA-first
-  views (`StowerRootView` is the lone `public` symbol; FDA / model-unavailable / checking /
+  views (`StowerApplicationWindowContentView` is the lone `public` symbol; FDA / model-unavailable / checking /
   connected-loading / failure) per the UI Contract, plus one isolated System Settings opener (FDA +
   Apple Intelligence panes, `guard let` + general fallback). Access-granted parks at an honest
   `.connectedPreparingBoard` loading state — the board + `refreshJudgments` lifecycle are the next
   slice. `precheck.sh` Step 6 now gates the StowerMacUI import boundary, the Messages-probe ban, and
   the app-entry imports. `Scripts/precheck.sh` green (163 tests). **Still blocked at Task 5 (human
   Xcode step): add the local package, link the `StowerMacUI` product, App Sandbox off, macOS-only,
-  render `StowerRootView()`, delete `ContentView.swift`.**
+  render `StowerApplicationWindowContentView()`, delete `ContentView.swift`.**
 - 2026-06-15: Relationship-debt engine went **FM-only and judged-only**
   (remove-heuristic-reply-judge). The heuristic judge
   (`StowerHeuristicReplyJudge`), the judge-mode concept (`StowerReplyJudgeMode` /

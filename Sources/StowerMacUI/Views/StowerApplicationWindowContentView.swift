@@ -3,7 +3,7 @@
 import AppKit
 import SwiftUI
 
-/// The app's whole composition API: a public, no-argument root view.
+/// The app's whole composition API: a public, no-argument Application Window content view.
 ///
 /// `init()` builds the shared `StowerMessagesComposition` — ONE
 /// `StowerDebtBoardProvider` injected into both the startup adapter and the board
@@ -19,12 +19,12 @@ public struct StowerApplicationWindowContentView: View {
 
     /// The feedback sheet's model.
     ///
-    /// Constructed once here and injected into the board so an in-progress
+    /// Retained as `@State` here and injected into the board so an in-progress
     /// message survives a re-render (JC2). Reads live trial state at send time
     /// via the startup model.
     @State private var feedbackModel: StowerFeedbackModel
 
-    /// The typed text in the key-entry screen; a `@State` on the stable root so
+    /// The typed text in the key-entry screen; a `@State` on this stable view so
     /// it survives an in-flight activate and any error re-render.
     @State internal var licenseKey = ""
 
@@ -108,8 +108,8 @@ public struct StowerApplicationWindowContentView: View {
     /// `UserDefaults.standard`; tests inject a fake.
     internal let badgeDismissal: any StowerTrialBadgeDismissing
 
-    /// Builds the production root wired to the shared engine-backed composition and
-    /// the real Lemon-Squeezy-backed license gate.
+    /// Builds the production `StowerApplicationWindowContentView` wired to the shared
+    /// engine-backed composition and the real Lemon-Squeezy-backed license gate.
     ///
     /// Throws only when an essential store can't be opened (a true disk-level draft
     /// store failure) — the same posture as any other essential-store startup fault.
@@ -254,7 +254,7 @@ public struct StowerApplicationWindowContentView: View {
             .animation(.easeInOut(duration: Self.crossFade), value: startupModel.state)
             .task { startupModel.start() }
             .onDisappear { startupModel.cancel() }
-            // F1 lives at the root, not inside the board case: a successful
+            // F1 attaches to this content view's body, not inside the board case: a successful
             // activation's startup rerun can stop short of the board (messages-
             // access onboarding, model unavailable), and the confirmation must
             // present over whichever screen the rerun lands on.

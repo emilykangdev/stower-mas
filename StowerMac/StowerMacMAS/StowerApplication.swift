@@ -92,7 +92,7 @@ final class ApplicationLifecycleDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-/// Builds the Application Window content once, surfacing a startup failure if an
+/// Builds the Application Window content, surfacing a startup failure if an
 /// essential store (the precious drafts database) can't be opened on a true
 /// disk-level fault. No diagnostics backends, no license gating — MAS
 /// privacy-first build.

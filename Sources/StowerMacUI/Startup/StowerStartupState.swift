@@ -1,6 +1,6 @@
 import Foundation
 
-/// The single state the root view renders during startup.
+/// The single state `StowerApplicationWindowContentView` renders during startup.
 ///
 /// It carries the **typed** failure, not a `String`: the view derives every word
 /// of user-facing copy from the case, so a raw engine string can never reach the
