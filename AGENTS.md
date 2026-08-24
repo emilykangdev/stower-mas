@@ -142,8 +142,8 @@ code:
      `StowerMac` scheme, `StowerMac.xcodeproj`, and the `StowerMacUI` /
      `StowerCore` / `StowerMessages` / `StowerPhotos` SPM module names. Do
      **not** sweep `StowerMac → Stower` anywhere in scheme/project/module
-     names — it breaks `-scheme StowerMac` in `ci.yml` + `release.yml`, every
-     `import StowerMacUI`, and `precheck.sh`'s own path guards.
+     names — it breaks `-scheme StowerMacMAS` in `ci.yml` + `mas-release.yml`,
+     every `import StowerMacUI`, and `precheck.sh`'s own path guards.
   2. **Within product identity, `PRODUCT_NAME` and the display name are
      deliberately different values — do not unify them.** `PRODUCT_NAME` stays
      space-free (`StowerTest` / `Stower`) because it drives the `.app` filename,

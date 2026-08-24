@@ -63,30 +63,25 @@ there's less to trust in the first place:
   question worth following up on) entirely on-device. There is no server
   that ever sees the content of your messages, a contact name, a phone
   number, a search query, or a file path — the analytics event types below
-  are structurally incapable of carrying any of that (see
-  `Docs/Analytics.md`).
+  are structurally incapable of carrying any of that (see the
+  `StowerAnalyticsEvent` doc comments; the MAS build additionally routes every
+  event to a no-op reporter, so nothing is recorded or transmitted at all).
 - **But Stower is not fully offline, and you should know exactly what does
   leave the device:**
-  - **Lemon Squeezy** (`api.lemonsqueezy.com`) — checks your license. The
-    only network call in the licensing path; a mechanical build check
+  - **Lemon Squeezy** (`api.lemonsqueezy.com`) — the license check of the
+    retired direct-distribution build. The Mac App Store build does not wire
+    a license gate, so this call never happens there (the App Store handles
+    purchase); the code path remains only as an inactive leftover. It was the
+    only network call in the licensing path, and a mechanical build check
     confirms no other licensing backend can sneak back in (see the past
     incident above).
-  - **TelemetryDeck** — anonymous funnel analytics (e.g. "did the app
-    launch and reach the board"), tied to a random per-install ID that is
-    hashed again before it leaves the device and carries no message
-    content. **On by default.** The one-click opt-out lives in Settings →
-    Privacy, and a disclosure card also surfaces in-app — but only after
-    about a minute of use, so a few of these anonymous events can fire
-    before you've seen or made that choice. Turning it off stops all
-    future events immediately; it does not retroactively delete what
-    already sent.
-  - **Sentry** — crash reports only, not general telemetry. Also on by
-    default, behind the same consent gate as TelemetryDeck above (so the
-    same "may fire briefly before you've seen the opt-out" caveat
-    applies). Attaches no identity, and every crash report is scrubbed
-    before it's sent — message content, contact info, and file paths that
-    could identify you are stripped or the whole report is dropped rather
-    than sent partially redacted (see `Docs/CrashReporting.md`).
+  - **Analytics: nothing.** The Mac App Store build ships no analytics SDK
+    at all — every analytics event terminates in a no-op reporter, so no
+    usage data is recorded or transmitted, ever. (The retired
+    direct-distribution build used TelemetryDeck; the MAS target excludes
+    that SDK entirely, and a mechanical build check keeps it out.)
+  - **Crash reporting: nothing.** No crash-reporting SDK is present in the
+    MAS build (see `Docs/CrashReporting.md` for the record of its removal).
   - **A feedback relay**, only if you explicitly open the in-app feedback
     form and submit something — this one is not default-on. Along with
     the message you type (and an email address, only if you choose to add

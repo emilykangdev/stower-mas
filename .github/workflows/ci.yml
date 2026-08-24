@@ -1,9 +1,8 @@
 name: CI
 # Run on branch pushes and PRs — NOT on tag pushes. A `branches:` filter under
-# `push` excludes tags, so a `messages-v*` release tag no longer triggers CI.
-# The tagged commit is already-merged, already-green main (it passed this same CI
-# when its PR landed), so CI-on-tag adds no signal and only steals the single
-# macos-26 runner that release.yml needs — leaving the Release job stuck Waiting.
+# `push` excludes tags, so a release tag (e.g. `mas-v*`) does not re-trigger CI:
+# the tagged commit is already-merged, already-green main (it passed this same
+# CI when its PR landed), so CI-on-tag adds no signal.
 on:
   push:
     branches:
@@ -47,17 +46,17 @@ jobs:
         env:
           STOWER_SKIP_FM_INTEGRATION: "1"
         run: ./Scripts/precheck.sh
-      # Build the StowerMac Xcode app target (no signing) so that Xcode-project-
-      # only code — StowerUpdaterController.swift, StowerUpdaterSettingsView.swift,
-      # Sparkle SPM linkage, and StowerApplication.swift wiring — is compiled on every
-      # push/PR. precheck.sh runs `swift build` over the SPM graph (Sources/,
-      # Tests/) but never touches StowerMac/StowerMac.xcodeproj; without this step
-      # a broken Sparkle API call would only surface at `xcodebuild archive` time
-      # during a release tag run. CODE_SIGNING_ALLOWED=NO avoids needing any
-      # Developer ID cert in CI. -skipPackagePluginValidation suppresses plugin
-      # sandbox warnings that are irrelevant in a build-only context.
+      # Build the StowerMacMAS Xcode app target (no signing) so that Xcode-
+      # project-only code — StowerApplication.swift and its scene/delegate
+      # wiring — is compiled on every push/PR. precheck.sh runs `swift build`
+      # over the SPM graph (Sources/, Tests/) but never touches
+      # StowerMac/StowerMac.xcodeproj; without this step an app-target break
+      # would only surface at `xcodebuild archive` time during a MAS release
+      # run. CODE_SIGNING_ALLOWED=NO avoids needing any distribution cert in
+      # CI. -skipPackagePluginValidation suppresses plugin sandbox warnings
+      # that are irrelevant in a build-only context.
       # Cache the SwiftPM dependencies xcodebuild clones for StowerMac.xcodeproj
-      # (Sparkle + its transitive deps), keyed by the Xcode project's Package.resolved.
+      # (the root package's remote deps), keyed by the Xcode project's Package.resolved.
       # -clonedSourcePackagesDirPath below pins the clone location to this cached dir,
       # so an unchanged resolution skips the network re-resolve on every CI run.
       - name: Cache StowerMac SwiftPM dependencies
@@ -76,6 +75,5 @@ jobs:
             -clonedSourcePackagesDirPath "${{ runner.temp }}/stowermac-spm" \
             CODE_SIGNING_ALLOWED=NO \
             -skipPackagePluginValidation
-      # Release build skipped in MAS worktree: no #if DEBUG seams to verify
-      # (Sentry/TelemetryDeck are gated by #if canImport, not DEBUG), and
-      # swift build -c release would fail without those deps in Package.swift.
+      # swift build -c release intentionally not run: the MAS target has no
+      # release-only code seams to verify beyond what Debug + tests cover.

@@ -374,11 +374,14 @@ The board's one bottom-banner slot is a 4-state machine
   only to de-duplicate an install's own anonymous event stream (counts, retention,
   funnels). It is **not** hardware-derived (no IDFV/IDFA/serial), identifies the
   *install*, not the device or the person (a second macOS account, or wiped app
-  data, yields a new id), and TelemetryDeck double-hashes it (app salt + SHA-256)
-  before any signal leaves the machine — the raw UUID never travels the network.
+  data, yields a new id); the retired TelemetryDeck backend additionally
+  double-hashed it (app salt + SHA-256), and in the MAS build no signal leaves
+  the machine at all — the raw UUID never travels the network.
   It plays **no role in licensing**: this diagnostics UUID and the license
   `instance.id` above are unrelated identifiers, neither one a device fingerprint.
-  Full rationale lives in `Docs/Analytics.md` §"Identity (anonymous by construction)".
+  Full rationale lives in the `StowerAnalytics` / `StowerAnalyticsEvent` doc comments
+  (the identity is anonymous by construction; in the MAS build no analytics backend
+  exists and events terminate in a no-op reporter).
 
 ---
 

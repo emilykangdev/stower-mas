@@ -184,7 +184,7 @@ exactly what you paid for**:
 
 The rule of thumb: **promise a little, do more.** AI makes the actual code fix cheap,
 but shipping a fix for an *old* major still means rebuilding, re-signing,
-re-notarizing it, and checking it still runs on today's macOS — and Apple controls
+re-submitting it for App Review, and checking it still runs on today's macOS — and Apple controls
 the on-device model, so a future macOS could break an old version in a way that
 isn't a quick fix.
 
@@ -206,7 +206,7 @@ So:
   bug-fixes are the *free* updates within a major.
 - **"Learning from users" without spying:** Stower's whole pitch is that your data
   never leaves your Mac, so Emily can't (and won't) watch how you use it. Improvement
-  comes from developer-generated test sets, opt-in feedback through TelemetryDeck which doesn't collect any personal data, and Emily using it herself.
+  comes from developer-generated test sets, the opt-in in-app feedback form, and Emily using it herself.
 
 Note to dev: see private repo me/Business/Plans/stower-strategy.md for further details.
 

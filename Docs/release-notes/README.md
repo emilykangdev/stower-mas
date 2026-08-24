@@ -1,33 +1,39 @@
 # Release notes
 
 One authored Markdown file per release, named exactly `<VERSION>.md` where
-`<VERSION>` is the marketing version in the tag (`messages-v<VERSION>`). For the
-tag `messages-v0.2.0`, the file is `Docs/release-notes/0.2.0.md`.
+`<VERSION>` is the marketing version passed to the `MAS Release` workflow (its
+`version` input). For version `1.0`, the file is `Docs/release-notes/1.0.md`.
 
-## How the pipeline uses this file
+Stower is MAS-only: updates are delivered by the App Store's own updater, so
+these notes feed exactly one user-facing surface — the App Store listing's
+**"What's New"** field — plus the repo's own version history.
 
-`release.yml` reads `Docs/release-notes/<VERSION>.md` and publishes it to **two**
-surfaces, so both show identical content:
+## The release flow (notes + tag)
 
-1. **GitHub Release body** — GitHub renders the Markdown natively
-   (`gh release create --notes-file`).
-2. **Sparkle in-app "what's new"** — `Scripts/release/render_notes_html.py`
-   renders the same Markdown to `messages/notes/<VERSION>.html` on `gh-pages`;
-   Sparkle loads it via `<sparkle:releaseNotesLink>`.
+1. **Author the notes first**: write `Docs/release-notes/<VERSION>.md` before
+   releasing. Keep them user-facing — App Store customers read them on the
+   product page and in the update list.
+2. **Bump** `CURRENT_PROJECT_VERSION` in `project.pbxproj`, then run the
+   `MAS Release` workflow (`workflow_dispatch`) with the marketing `version`.
+3. **Submit in App Store Connect**: when the build lands in TestFlight and is
+   submitted for review, paste this file's content into the version's
+   **"What's New"** field.
+4. **Tag the released commit** once the upload succeeds:
 
-A tag push with a missing or empty notes file **fails the release loudly**
-(the "Verify authored release notes present" step runs before archive/notarize),
-so a release can never ship empty notes.
+   ```bash
+   git tag mas-v<VERSION> && git push origin mas-v<VERSION>
+   ```
+
+   The tag is how "which version am I on?" stays answerable from the repo —
+   `git describe --tags` on any checkout, and each tag pairs with its notes
+   file by version number.
+
+Files `0.1.1.md`–`0.2.2.md` predate the MAS migration (they shipped through the
+retired direct-distribution pipeline under `messages-v*` tags) and remain as the
+version-history record.
 
 ## Authoring
 
-Write the notes **before** you tag. Keep them user-facing — real users read them
-in the update prompt. Supported Markdown subset (see `render_notes_html.py`):
-
-- ATX headings (`#`..`######`)
-- Unordered lists (`-` or `*`)
-- Paragraphs
-- Inline `**bold**`, `` `code` ``, and `[text](url)`
-
-Nested lists, ordered lists, tables, and blockquotes are **not** rendered — keep
-to the subset above.
+App Store "What's New" is plain text — Markdown is not rendered there. Keep the
+structure simple (short lines, `-` bullets) so the same file reads well both as
+Markdown in the repo and as plain text on the store page.

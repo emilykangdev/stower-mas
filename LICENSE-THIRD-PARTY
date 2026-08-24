@@ -40,7 +40,5 @@ StowerMac binary. See their respective repositories for license terms.
 | Package        | Repository                                              | License      |
 | -------------- | ------------------------------------------------------- | ------------ |
 | GRDB.swift     | https://github.com/groue/GRDB.swift                     | MIT          |
-| Sentry         | https://github.com/getsentry/sentry-cocoa               | MIT          |
-| TelemetryDeck  | https://github.com/TelemetryDeck/SwiftSDK               | Apache-2.0   |
 | Lemon Squeezy  | https://github.com/lmsqueezy/laravel                    | MIT          |
 | swift-argument-parser | https://github.com/apple/swift-argument-parser    | Apache-2.0   |

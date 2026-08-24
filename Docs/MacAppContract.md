@@ -417,8 +417,9 @@ same shape — never let a view model import `StowerMessages`.
   `StowerPrivacySettingsView` (analytics consent toggle).
 
 **Launch/quit diagnostics hooks** (the only lifecycle calls the app makes into the
-diagnostics subsystem — see [Analytics.md](Analytics.md) and
-[CrashReporting.md](CrashReporting.md) for the full rationale):
+diagnostics subsystem — the event schema and PII rules live in
+`StowerAnalyticsEvent`'s doc comments; crash reporting's absence is recorded in
+[CrashReporting.md](CrashReporting.md)):
 
 - `ApplicationDefinition.init` → `StowerDiagnostics.initialize()` then
   `StowerAnalytics.reportAppLaunched()`. On the MAS target, `initialize()` starts

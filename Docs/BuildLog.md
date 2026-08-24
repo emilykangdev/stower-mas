@@ -13,6 +13,19 @@ accurate at the time.
 
 ## Status
 
+- 2026-08-24: **Direct-distribution machinery deleted (MAS-only decision sweep,
+  `tmp/decisions/delete-direct-distribution-machinery.md`).** Emily confirmed no
+  direct-distribution sibling checkout is active and ruled the retired pipeline
+  out of the repo: deleted `.github/workflows/release.yml` (Sparkle appcast /
+  Developer ID / notarization / DMG), `Docs/Release.md`, `Docs/Analytics.md`
+  (the event schema's source of truth is now `StowerAnalyticsEvent`'s doc
+  comments), and `Scripts/release/`'s appcast/DMG/notes tooling —
+  `ExportOptionsMAS.plist` stays (consumed by `mas-release.yml`). Kept and
+  repurposed: `Docs/release-notes/` now feeds App Store Connect's "What's New"
+  plus a manual `mas-v<VERSION>` tag convention (see its README). `ci.yml` stays
+  as the live CI gate with its stale Sparkle/Updater/Sentry comments purged.
+  Deferred to its own plan: the inactive Lemon Squeezy licensing subsystem.
+
 - 2026-08-23: **Application/window/lifecycle language alignment
   (`add-window-menu-to-reopen-main-application-window` branch, plan
   `tmp/plans/ready-plans/2026-08-23-align-application-language.md`).**
