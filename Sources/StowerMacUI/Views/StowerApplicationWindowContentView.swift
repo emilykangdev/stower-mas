@@ -15,7 +15,11 @@ import SwiftUI
 /// flow on Check Again.
 public struct StowerApplicationWindowContentView: View {
     @State internal var startupModel: StowerStartupModel
-    @State private var boardModel: StowerBoardViewModel
+
+    /// `internal` (not `private`) so the drain tests can put a write in flight
+    /// through the content view (I-DrainOutlivesWindow) — the same widening
+    /// precedent as `startupModel` above.
+    @State internal var boardModel: StowerBoardViewModel
 
     /// The feedback sheet's model.
     ///
@@ -238,8 +242,14 @@ public struct StowerApplicationWindowContentView: View {
             analyticsReporter: analyticsReporter
         )
         _feedbackModel = State(initialValue: feedbackModel)
-        terminationDrain?.registerDrain { [weak boardModel] in
-            await boardModel?.drainPendingWork()
+        // STRONG capture, deliberately (I-DrainOutlivesWindow): closing the
+        // Application Window tears down the view tree — and this @State-held model —
+        // BEFORE `applicationShouldTerminate` runs, so a weak capture would hollow
+        // the quit drain into a silent no-op and the process could exit mid-write.
+        // The terminationDrain lives on the app delegate (process lifetime), and the
+        // MAS app quits with its window, so the retain lasts only until that quit.
+        terminationDrain?.registerDrain { [boardModel] in
+            await boardModel.drainPendingWork()
         }
         self.settings = settings
         self.badgeDismissal = badgeDismissal
