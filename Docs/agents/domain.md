@@ -42,8 +42,8 @@ plan, a test name — use the term as `CONTEXT.md` defines it. Don't drift to sy
 Prefer the codebase's own vocabulary over invented terms even when the concept isn't in
 `CONTEXT.md` yet: read the doc comments and symbol names first. A real example of getting this
 wrong: an agent coined "barrier" for the quit-time wait on in-flight draft writes, when the
-codebase already said **drain** (`flushAll()`, `StowerTerminationFlusher`) — and had to sweep 32
-occurrences back out.
+codebase already had its own name for it (today: **drain** — `drainPendingWork()`,
+`StowerTerminationDrain`) — and had to sweep 32 occurrences back out.
 
 If the concept you need genuinely isn't named anywhere, that's a signal: either you're inventing
 language the project doesn't use (reconsider) or there's a real gap (note it for a human to add to
