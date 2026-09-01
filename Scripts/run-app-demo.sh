@@ -62,7 +62,26 @@ echo ""
 echo "==> Quitting any running copy and launching the fresh build against the demo db…"
 pkill -x "$EXECUTABLE_NAME" 2>/dev/null || true
 sleep 1
-STOWER_MESSAGES_DB="$DEMO_DB" "$BIN" &
 echo "==> Launched against the demo db (your real Messages history is untouched)."
 echo "    Names come from Contacts, so the 555-01xx demo numbers show as numbers"
 echo "    unless you've added them as contacts."
+echo ""
+echo "==> Running in the foreground: this script exits when Stower quits."
+echo "    (Ctrl-C quits the app and returns your prompt.)"
+echo ""
+
+# Foreground, NOT background: the app inherits this terminal's stdout either way,
+# so a backgrounded launch returned the prompt immediately and then kept printing
+# the app's NSLog output over it — the terminal looked hung while the script had
+# in fact already exited. Running in the foreground makes the terminal's state
+# honest: busy means Stower is alive, prompt back means Stower quit. That also
+# makes the quit-on-window-close behavior directly observable, which is what the
+# MacAppContract §10 manual checklist asks the reader to watch for.
+set +e
+STOWER_MESSAGES_DB="$DEMO_DB" "$BIN"
+APP_STATUS=$?
+set -e
+
+echo ""
+echo "==> Stower exited (status $APP_STATUS)."
+exit "$APP_STATUS"
