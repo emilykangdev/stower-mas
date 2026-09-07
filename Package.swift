@@ -17,7 +17,7 @@ let package = Package(
         .package(url: "https://github.com/mattt/Madrid", exact: "0.4.0"),
         .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.3.0"),
         .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.0"),
-        .package(url: "https://github.com/huggingface/swift-transformers", from: "0.1.17"),
+        .package(url: "https://github.com/huggingface/swift-transformers", from: "1.3.4"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
     ],
     targets: [
